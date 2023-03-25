@@ -15,7 +15,8 @@ body {
   align-items: center;
   margin: 0;
   padding: 0;
-  height: 100vh
+  height: 100vh;
+  background-color: rgb(188, 182, 182);
 }
 
 .calculator-container {
@@ -24,6 +25,26 @@ body {
   justify-content: center;
   align-items: center;
   border: 1px solid black;
+}
+
+.output-container {
+  display: flex;
+  flex-direction: column;
+}
+
+.expression {
+  outline: 1px solid black;
+  width: 240px;
+  height: 40px;
+  margin-top: 10px;
+  text-align: right;
+}
+
+.result {
+  outline: 1px solid black;
+  width: 240px;
+  height: 50px;
+  text-align: right;
 }
 
 .display-result {
