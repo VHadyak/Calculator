@@ -20,8 +20,18 @@ body {
 
 .calculator-container {
   display: flex;
+  flex-direction: column;
   justify-content: center;
   align-items: center;
+  border: 1px solid black;
+}
+
+.display-result {
+  width: 240px;
+  height: 40px;
+  font-size: 20px;
+  margin: 10px;
+  text-align: right;
 }
 
 .button-container {
@@ -29,16 +39,15 @@ body {
   flex-direction: column;
   justify-content: center;
   align-items: center;
+  margin: 10px;
 }
 
 .button-row {
   display: flex;
-  justify-content: space-between;
   width: 240px;
 }
 
 .button {
-  border: 1px solid black;
   width: 60px;
   height: 60px;
   text-align: center;
