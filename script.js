@@ -1,37 +1,61 @@
 // Calculator by Vlad Hadyak
 
-let firstNum = 5;
+const result = document.querySelector(".result");
+const numButtons = [];
+
+// Include 10 number buttons
+for (let i = 0; i <= 9; i++) {
+  numButtons[i] = document.querySelector("#num" + i);
+}; 
+
+function displayNumbers() {
+  numButtons.forEach((button) => {
+    const number = button.textContent;
+    button.addEventListener("click", () => {
+      let finalResult = result.textContent += number;
+      // If numbers exceed over 15 digits in length on display, then restrict it from displaying more numbers
+      if (finalResult.toString().length > 15) {                      
+         finalResult = finalResult.substring(0, 15);
+         console.log("Sorry! You reached maximum number of digits");
+      }
+      result.textContent = finalResult;
+    });   
+  });
+};
+displayNumbers();
+
+
+let num1 = 6;
+let num2 = 3;
 let operator = "+"
-let secNum = 3;
 
-
-function addition() {
-  return firstNum + secNum;
+function addition(num1, num2) {
+  return num1 + num2;
 };
 
-function subtraction() {
-  return firstNum - secNum;
+function subtraction(num1, num2) {
+  return num1 - num2;
 };
 
-function multiplication() {
-  return firstNum * secNum;
+function multiplication(num1, num2) {
+  return num1 * num2;
 };
 
-function division() {
-  return firstNum / secNum;
+function division(num1, num2) {
+  return num1 / num2;
 };
 
-
-function operate() {
+function operate(operator, num1, num2) {
  if (operator === "+") {
-  return addition();
+  return addition(num1, num2);
  } else if (operator === "-") {
-  return subtraction();
+  return subtraction(num1, num2);
  } else if (operator === "*") {
-  return multiplication();
+  return multiplication(num1, num2);
  } else if (operator === "/") {
-  return division();
+  return division(num1, num2);
  };
 };
-console.log(operate());
+
+//result.textContent = operate(operator, num1, num2);  //Display result in the input text box
 
