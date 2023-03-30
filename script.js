@@ -12,12 +12,13 @@ const equal = document.querySelector("#equals");
 const numButtons = [];
 
 let numericValue = 0;
-
+let runningTotal = 0;
 let operator = "";
 
 let addClicked = false;
 let subtractClicked = false;
 let equalClicked = false;
+let numberClicked = false;
 
 // Include 10 number buttons
 for (let i = 0; i <= 9; i++) {
@@ -28,13 +29,13 @@ function displayNumbers() {
   numButtons.forEach((button) => {
     const number = button.textContent;
     button.addEventListener("click", () => {
-
-      if (addClicked) {                // If add button was clicked before entering second number
+ 
+      if (addClicked) {                                   // If add button was clicked before entering second number
         result.textContent = "";
-        addClicked = false;
+        addClicked = true;
       } else if (subtractClicked) {
         result.textContent = "";
-        subtractClicked = false;
+        subtractClicked = true;
       };
 
       let finalNumber = result.textContent += number;
@@ -42,14 +43,21 @@ function displayNumbers() {
       if (finalNumber.toString().length > 15) {                      
          finalNumber = finalNumber.substring(0, 15);
       };
-      result.textContent = finalNumber; // finalNumber means if you are done with entering anymore digits and ready to use operators
-      numericValue = parseFloat(finalNumber); // Converts 'string' value to 'numeric' value
+      result.textContent = finalNumber;                  // finalNumber means if you are done with entering anymore digits and ready to use operators
+      numericValue = parseFloat(finalNumber);            // Converts 'string' value to 'numeric' value
+
+      // Split each number button selected and convert into an array of numbers
+      const digits = numericValue.toString().split("");  
+      const numArr = digits.map((digit) => {
+        return parseFloat(digit);
+      })
+      console.log(numArr);
     });   
   });
 };
 displayNumbers();
 
-let runningTotal = 0;
+
 
 function addExpression(operator) {
   if (operator == "+") {
@@ -60,53 +68,22 @@ function addExpression(operator) {
   return operator;
 };
 
+
 function addition() {
   add.addEventListener("click", () => {
-    operator = "+";
-    expression.textContent += `${numericValue} ${addExpression("+")} `;
-    addClicked = true;
-
-    // Updated result every time first 2 numbers are added
-    runningTotal += numericValue;       
-    result.textContent = runningTotal;
 
   });
-  return runningTotal += numericValue;
 };
 addition();
 
+
 function subtraction() {
   subtract.addEventListener("click", () => {
-    //console.log(runningTotal);
-    operator = "-";
-    expression.textContent += `${numericValue} ${addExpression("-")} `;
-    subtractClicked = true;
-   
-    if (runningTotal === 0) {
-      runningTotal = numericValue;
-      result.textContent = runningTotal;
-    } else {
-      runningTotal -= numericValue;
-      result.textContent = runningTotal;
-    };
+
   });
-  return runningTotal -= numericValue;
 };
 subtraction();
 
 
-function operate() {
-  equal.addEventListener("click", () => {
-    expression.textContent += ` ${numericValue}`;
-    if (operator == "+") {
-      result.textContent = addition();
-      addClicked = false;
-    } else if (operator == "-") {
-      result.textContent = subtraction();
-      subtractClicked = false;
-    };
-  });
-};
-operate();
 
 
