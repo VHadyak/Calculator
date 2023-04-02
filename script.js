@@ -1,89 +1,138 @@
 // Calculator by Vlad Hadyak
 
+// Output variables
 const result = document.querySelector(".result");
 const expression = document.querySelector(".expression");
 
+// Operation variables
+const add = document.querySelector("#addition");
+const subtract = document.querySelector("#subtraction");
 const divide = document.querySelector("#division");
 const multiply = document.querySelector("#multiplication");
-const subtract = document.querySelector("#subtraction");
-const add = document.querySelector("#addition");
 const equal = document.querySelector("#equals");
 
-const numButtons = [];
-
+// Values
 let numericValue = 0;
-let runningTotal = 0;
 let operator = "";
+let firstNum = null;
+let secondNum = null;
+let previousOperator = null;
+let previousResult = null;
 
+// Boolean buttons
 let addClicked = false;
 let subtractClicked = false;
 let equalClicked = false;
 let numberClicked = false;
+let operatorClicked = false;
 
 // Include 10 number buttons
+const numButtons = [];
+
 for (let i = 0; i <= 9; i++) {
   numButtons[i] = document.querySelector("#num" + i);
 }; 
 
+// Display numbers 
 function displayNumbers() {
   numButtons.forEach((button) => {
     const number = button.textContent;
     button.addEventListener("click", () => {
- 
-      if (addClicked) {                                   // If add button was clicked before entering second number
+      numberClicked = true;
+
+      if (addClicked) {     
         result.textContent = "";
-        addClicked = true;
+        addClicked = false;
       } else if (subtractClicked) {
         result.textContent = "";
-        subtractClicked = true;
+        subtractClicked = false;
       };
 
-      let finalNumber = result.textContent += number;
-      // If numbers exceed over 15 digits in length on display, then restrict it from displaying more numbers
-      if (finalNumber.toString().length > 15) {                      
-         finalNumber = finalNumber.substring(0, 15);
-      };
-      result.textContent = finalNumber;                  // finalNumber means if you are done with entering anymore digits and ready to use operators
-      numericValue = parseFloat(finalNumber);            // Converts 'string' value to 'numeric' value
-
-      // Split each number button selected and convert into an array of numbers
-      const digits = numericValue.toString().split("");  
-      const numArr = digits.map((digit) => {
-        return parseFloat(digit);
-      })
-      console.log(numArr);
-    });   
+      result.textContent += number;     
+      numericValue = parseFloat(result.textContent);
+    });
+  
   });
 };
 displayNumbers();
 
 
-
-function addExpression(operator) {
-  if (operator == "+") {
-    expression.textContent += `${numericValue} ${operator}`;
-  } else if (operator == "-") {
-    expression.textContent += `${numericValue} ${operator}`;
+// Perform arithmetic operations
+function operate(operator, firstNum, secondNum) {
+  switch (operator) {
+    case "+":
+      return firstNum + secondNum;
+    case "-":
+      return firstNum - secondNum;
+    case "*":
+      return firstNum * secondNum;
+    case "/":
+      return firstNum / secondNum;
+    default:
+      return null;
   };
-  return operator;
 };
 
-
-function addition() {
+const addNumbers = function() {
   add.addEventListener("click", () => {
 
+    operatorClicked = true;
+    addClicked = true;
+    subtractClicked = false;
+    operator = "+";
+    
+    
+    if (firstNum === null) {                                                                  // If previous calculations haven't been performed, then assign numericValue to firstNum
+      firstNum = numericValue;
+      expression.textContent = `${firstNum} ${operator} `;
+      result.textContent = firstNum;
+    } else {                                                                                  // If firstNum has a value
+      secondNum = numericValue;                                                               // Assign numericValue to secondNum 
+      if (previousResult === null) {                                                          // If previousResult does not exist
+        previousResult = firstNum;                                                            // Assign the value of firstNum as previousResult
+      } else {                                                                                // If previousResult has a value
+        firstNum = operate(operator, firstNum, secondNum);                                    // Perform calculation of the previous firstNum and new secondNum value
+        result.textContent = firstNum;
+      };
+      firstNum = operate(previousOperator || operator, previousResult, secondNum);            // Perform calculation using previousOperator and previousResult, and new secondNum
+      previousResult = firstNum;                                                              // Update previousResult after operation
+      expression.textContent = `${previousResult} ${operator} `;
+      result.textContent = previousResult;
+    };
+    previousOperator = "+";                                                                   // previousOperator behaves as current operator 
   });
 };
-addition();
 
 
-function subtraction() {
+const subtractNumbers = function() {
   subtract.addEventListener("click", () => {
-
+    operatorClicked = true;
+    subtractClicked = true;
+    addClicked = false;
+    operator = "-";
+    
+    if (firstNum === null) {   
+      firstNum = numericValue;
+      expression.textContent = `${firstNum} ${operator} `;
+      result.textContent = firstNum;
+    } else {                                                             
+      secondNum = numericValue;
+      if (previousResult === null) {
+        previousResult = firstNum;
+      } else {
+        firstNum = operate(operator, firstNum, secondNum);
+        result.textContent = firstNum;
+      };
+      firstNum = operate(previousOperator || operator, previousResult, secondNum);
+      previousResult = firstNum;
+      expression.textContent = `${previousResult} ${operator}`;
+      result.textContent = previousResult;
+    };
+    previousOperator = "-";
   });
 };
-subtraction();
 
 
+addNumbers();
 
-
+calculate();
