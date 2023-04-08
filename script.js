@@ -72,6 +72,27 @@ function operate(operator, firstNum, secondNum) {
   };
 };
 
+// Calculate numbers to display correct result
+function calculateNumbers() {
+  if (firstNum === null) {                                                                  // If previous calculations haven't been performed, then assign numericValue to firstNum
+    firstNum = numericValue;
+    expression.textContent = `${firstNum} ${operator} `;
+    result.textContent = firstNum;
+  } else {                                                                                  // If firstNum has a value
+    secondNum = numericValue;                                                               // Assign numericValue to secondNum after operator was clicked
+    if (previousResult === null) {                                                          // If previousResult does not exist
+      previousResult = firstNum;                                                            // Assign the value of firstNum as previousResult
+    } else {                                                                                // If previousResult has a value
+      firstNum = operate(operator, firstNum, secondNum);                                    // Perform calculation of the previous firstNum and new secondNum value
+      result.textContent = firstNum;
+    };
+    firstNum = operate(previousOperator || operator, previousResult, secondNum);            // Perform calculation using previousOperator and previousResult, and new secondNum
+    previousResult = firstNum;                                                              // Update previousResult after operation
+    expression.textContent = `${previousResult} ${operator} `;
+    result.textContent = previousResult;
+  };
+}
+
 const addNumbers = function() {
   add.addEventListener("click", () => {
 
@@ -102,23 +123,8 @@ const addNumbers = function() {
     subtractClicked = false;
     addClicked = true;
     
-    if (firstNum === null) {                                                                  // If previous calculations haven't been performed, then assign numericValue to firstNum
-      firstNum = numericValue;
-      expression.textContent = `${firstNum} ${operator} `;
-      result.textContent = firstNum;
-    } else {                                                                                  // If firstNum has a value
-      secondNum = numericValue;                                                               // Assign numericValue to secondNum after operator was clicked
-      if (previousResult === null) {                                                          // If previousResult does not exist
-        previousResult = firstNum;                                                            // Assign the value of firstNum as previousResult
-      } else {                                                                                // If previousResult has a value
-        firstNum = operate(operator, firstNum, secondNum);                                    // Perform calculation of the previous firstNum and new secondNum value
-        result.textContent = firstNum;
-      };
-      firstNum = operate(previousOperator || operator, previousResult, secondNum);            // Perform calculation using previousOperator and previousResult, and new secondNum
-      previousResult = firstNum;                                                              // Update previousResult after operation
-      expression.textContent = `${previousResult} ${operator} `;
-      result.textContent = previousResult;
-    };
+    calculateNumbers();
+
     previousOperator = "+";                                                                   // previousOperator behaves as current operator 
   });
 };
@@ -153,26 +159,12 @@ const subtractNumbers = function() {
     addClicked = false;
     subtractClicked = true;
     
-    if (firstNum === null) {   
-      firstNum = numericValue;
-      expression.textContent = `${firstNum} ${operator} `;
-      result.textContent = firstNum;
-    } else {                                                             
-      secondNum = numericValue;
-      if (previousResult === null) {
-        previousResult = firstNum;
-      } else {
-        firstNum = operate(operator, firstNum, secondNum);
-        result.textContent = firstNum;
-      };
-      firstNum = operate(previousOperator || operator, previousResult, secondNum);
-      previousResult = firstNum;
-      expression.textContent = `${previousResult} ${operator}`;
-      result.textContent = previousResult;
-    };
+    calculateNumbers();
+
     previousOperator = "-";
   });
 };
 
 addNumbers();
 subtractNumbers();
+
