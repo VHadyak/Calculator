@@ -40,7 +40,8 @@ function displayNumbers() {
     button.addEventListener("click", () => {
       numberClicked = true;
 
-      if (addClicked) {     
+      // Clear 'result' container every-time a new number is clicked after operator 
+      if (addClicked) {                                     
         result.textContent = "";
         addClicked = false;
       } else if (subtractClicked) {
@@ -51,11 +52,9 @@ function displayNumbers() {
       result.textContent += number;     
       numericValue = parseFloat(result.textContent);
     });
-  
   });
 };
 displayNumbers();
-
 
 // Perform arithmetic operations
 function operate(operator, firstNum, secondNum) {
@@ -76,18 +75,39 @@ function operate(operator, firstNum, secondNum) {
 const addNumbers = function() {
   add.addEventListener("click", () => {
 
-    operatorClicked = true;
-    addClicked = true;
-    subtractClicked = false;
+    if (addClicked && previousOperator === "-") {                                             // If 'add' clicked, then 'subtract', and then 'add' again, then perform addition 
+      previousOperator = "+";
+    };
+
     operator = "+";
-    
+
+    expression.textContent = `${firstNum} ${operator}`;
+
+    if (operatorClicked && addClicked) {                                                      // If operator was clicked ("+"), and clicked again ("+") right after
+      if (firstNum !== null || secondNum !== null) {                                          // If first and second numbers are not empty
+        return;                                                                               // Return nothing, unless same operator is clicked and number entered, return that operation result
+      };
+    } else if (subtractClicked) {                                                             // If 'subtract' was clicked, then 'add' was clicked, then return addition
+      previousOperator = "+";
+      expression.textContent = `${previousResult} ${operator}`;
+      if (firstNum !== null || secondNum !== null) {
+        if (!previousResult) {
+          expression.textContent = `${firstNum} ${operator}`;
+        };
+        return;
+      };
+    };
+
+    operatorClicked = true;
+    subtractClicked = false;
+    addClicked = true;
     
     if (firstNum === null) {                                                                  // If previous calculations haven't been performed, then assign numericValue to firstNum
       firstNum = numericValue;
       expression.textContent = `${firstNum} ${operator} `;
       result.textContent = firstNum;
     } else {                                                                                  // If firstNum has a value
-      secondNum = numericValue;                                                               // Assign numericValue to secondNum 
+      secondNum = numericValue;                                                               // Assign numericValue to secondNum after operator was clicked
       if (previousResult === null) {                                                          // If previousResult does not exist
         previousResult = firstNum;                                                            // Assign the value of firstNum as previousResult
       } else {                                                                                // If previousResult has a value
@@ -103,13 +123,35 @@ const addNumbers = function() {
   });
 };
 
-
 const subtractNumbers = function() {
   subtract.addEventListener("click", () => {
-    operatorClicked = true;
-    subtractClicked = true;
-    addClicked = false;
+
+    if (subtractClicked && previousOperator === "+") {                                        // If 'subtract' was clicked, then 'add', and then 'subtract' again, then perform subtraction 
+      previousOperator = "-";
+    };
+    
     operator = "-";
+
+    expression.textContent = `${firstNum} ${operator}`;
+   
+    if (operatorClicked && subtractClicked) {
+      if (firstNum !== null || secondNum !== null) {
+        return;
+      };
+    } else if (addClicked) {
+      previousOperator = "-";
+      expression.textContent = `${previousResult} ${operator}`;
+      if (firstNum !== null || secondNum !== null) {
+        if (!previousResult) {
+          expression.textContent = `${firstNum} ${operator}`;
+        };
+        return;
+      };
+    };
+ 
+    operatorClicked = true;
+    addClicked = false;
+    subtractClicked = true;
     
     if (firstNum === null) {   
       firstNum = numericValue;
@@ -132,7 +174,5 @@ const subtractNumbers = function() {
   });
 };
 
-
 addNumbers();
-
-calculate();
+subtractNumbers();
