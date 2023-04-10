@@ -33,6 +33,20 @@ for (let i = 0; i <= 9; i++) {
   numButtons[i] = document.querySelector("#num" + i);
 }; 
 
+// Separate digits with space for better readability
+function createNumbersWithSpace() {
+  let spacedNumericValue = result.textContent.replace(/\s/g, '');                        
+
+  if (spacedNumericValue.length > 12) {                                                     // If number digits exceed '15' in length
+    spacedNumericValue = spacedNumericValue.substring(0, 12);                               // Display only the first 15 digit numbers (including any white space characters)
+  };
+
+  spacedNumericValue = spacedNumericValue.replace(/(\d)(?=(\d{3})+$)/g, '$1 ');             // Add space after every group of 3 digits
+  result.textContent = spacedNumericValue;
+
+  numericValue = parseInt(spacedNumericValue.replace(/\s/g, ''));                           // Convert to integer
+};
+
 // Display numbers 
 function displayNumbers() {
   numButtons.forEach((button) => {
@@ -50,7 +64,7 @@ function displayNumbers() {
       };
 
       result.textContent += number;     
-      numericValue = parseFloat(result.textContent);
+      createNumbersWithSpace();
     });
   });
 };
@@ -72,12 +86,13 @@ function operate(operator, firstNum, secondNum) {
   };
 };
 
-// Calculate numbers to display correct result
+// Calculate numbers to display a correct result
 function calculateNumbers() {
   if (firstNum === null) {                                                                  // If previous calculations haven't been performed, then assign numericValue to firstNum
     firstNum = numericValue;
     expression.textContent = `${firstNum} ${operator} `;
     result.textContent = firstNum;
+    createNumbersWithSpace();
   } else {                                                                                  // If firstNum has a value
     secondNum = numericValue;                                                               // Assign numericValue to secondNum after operator was clicked
     if (previousResult === null) {                                                          // If previousResult does not exist
@@ -90,6 +105,7 @@ function calculateNumbers() {
     previousResult = firstNum;                                                              // Update previousResult after operation
     expression.textContent = `${previousResult} ${operator} `;
     result.textContent = previousResult;
+    createNumbersWithSpace();
   };
 }
 
@@ -168,3 +184,20 @@ const subtractNumbers = function() {
 addNumbers();
 subtractNumbers();
 
+//const calculate = function() {
+  //equal.addEventListener("click", () => {
+    //if (operator === null) return;
+
+    //secondNum = numericValue;
+    //firstNum = operate(previousOperator, firstNum, secondNum);
+    //expression.textContent = `${firstNum} `;
+    //result.textContent = firstNum;
+
+    //operator = null;
+    //previousOperator = null;
+    //operatorClicked = false;
+    //firstNum = null;
+    //secondNum = null;
+  //});
+//};
+//calculate();
