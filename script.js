@@ -22,6 +22,8 @@ let previousResult = null;
 // Boolean buttons
 let addClicked = false;
 let subtractClicked = false;
+let multiplyClicked = false;
+let divideClicked = false;
 let equalClicked = false;
 let numberClicked = false;
 let operatorClicked = false;
@@ -37,14 +39,14 @@ for (let i = 0; i <= 9; i++) {
 function createNumbersWithSpace() {
   let spacedNumericValue = result.textContent.replace(/\s/g, '');                        
 
-  if (spacedNumericValue.length > 12) {                                                     // If number digits exceed '15' in length
-    spacedNumericValue = spacedNumericValue.substring(0, 12);                               // Display only the first 15 digit numbers (including any white space characters)
+  if (spacedNumericValue.length > 12) {                                                       // If number digits exceed '15' in length
+    spacedNumericValue = spacedNumericValue.substring(0, 12);                                 // Display only the first 15 digit numbers (including any white space characters)
   };
 
-  spacedNumericValue = spacedNumericValue.replace(/(\d)(?=(\d{3})+$)/g, '$1 ');             // Add space after every group of 3 digits
+  spacedNumericValue = spacedNumericValue.replace(/(\d)(?=(\d{3})+$)/g, '$1 ');               // Add space after every group of 3 digits
   result.textContent = spacedNumericValue;
 
-  numericValue = parseInt(spacedNumericValue.replace(/\s/g, ''));                           // Convert to integer
+  numericValue = parseInt(spacedNumericValue.replace(/\s/g, ''));                             // Convert to integer
 };
 
 // Display numbers 
@@ -61,6 +63,12 @@ function displayNumbers() {
       } else if (subtractClicked) {
         result.textContent = "";
         subtractClicked = false;
+      } else if (multiplyClicked) {
+        result.textContent = "";
+        multiplyClicked = false;
+      } else if (divideClicked) {
+        result.textContent = "";
+        divideClicked = false;
       };
 
       result.textContent += number;     
@@ -77,7 +85,7 @@ function operate(operator, firstNum, secondNum) {
       return firstNum + secondNum;
     case "-":
       return firstNum - secondNum;
-    case "*":
+    case "x":
       return firstNum * secondNum;
     case "/":
       return firstNum / secondNum;
@@ -88,26 +96,26 @@ function operate(operator, firstNum, secondNum) {
 
 // Calculate numbers to display a correct result
 function calculateNumbers() {
-  if (firstNum === null) {                                                                  // If previous calculations haven't been performed, then assign numericValue to firstNum
+  if (firstNum === null) {                                                                    // If previous calculations haven't been performed, then assign numericValue to firstNum
     firstNum = numericValue;
     expression.textContent = `${firstNum} ${operator} `;
     result.textContent = firstNum;
     createNumbersWithSpace();
-  } else {                                                                                  // If firstNum has a value
-    secondNum = numericValue;                                                               // Assign numericValue to secondNum after operator was clicked
-    if (previousResult === null) {                                                          // If previousResult does not exist
-      previousResult = firstNum;                                                            // Assign the value of firstNum as previousResult
-    } else {                                                                                // If previousResult has a value
-      firstNum = operate(operator, firstNum, secondNum);                                    // Perform calculation of the previous firstNum and new secondNum value
+  } else {                                                                                    // If firstNum has a value
+    secondNum = numericValue;                                                                 // Assign numericValue to secondNum after operator was clicked
+    if (previousResult === null) {                                                            // If previousResult does not exist
+      previousResult = firstNum;                                                              // Assign the value of firstNum as previousResult
+    } else {                                                                                  // If previousResult has a value
+      firstNum = operate(operator, firstNum, secondNum);                                      // Perform calculation of the previous firstNum and new secondNum value
       result.textContent = firstNum;
     };
-    firstNum = operate(previousOperator || operator, previousResult, secondNum);            // Perform calculation using previousOperator and previousResult, and new secondNum
-    previousResult = firstNum;                                                              // Update previousResult after operation
+    firstNum = operate(previousOperator || operator, previousResult, secondNum);              // Perform calculation using previousOperator and previousResult, and new secondNum
+    previousResult = firstNum;                                                                // Update previousResult after operation
     expression.textContent = `${previousResult} ${operator} `;
     result.textContent = previousResult;
     createNumbersWithSpace();
   };
-}
+};
 
 const addNumbers = function() {
   add.addEventListener("click", () => {
@@ -124,7 +132,7 @@ const addNumbers = function() {
       if (firstNum !== null || secondNum !== null) {                                          // If first and second numbers are not empty
         return;                                                                               // Return nothing, unless same operator is clicked and number entered, return that operation result
       };
-    } else if (subtractClicked) {                                                             // If 'subtract' was clicked, then 'add' was clicked, then return addition
+    } else if (subtractClicked || multiplyClicked) {                                          // If 'subtract' was clicked or 'multiply', then 'add' was clicked, then return addition
       previousOperator = "+";
       expression.textContent = `${previousResult} ${operator}`;
       if (firstNum !== null || secondNum !== null) {
@@ -136,6 +144,7 @@ const addNumbers = function() {
     };
 
     operatorClicked = true;
+    multiplyClicked = false;
     subtractClicked = false;
     addClicked = true;
     
@@ -160,7 +169,7 @@ const subtractNumbers = function() {
       if (firstNum !== null || secondNum !== null) {
         return;
       };
-    } else if (addClicked) {
+    } else if (addClicked || multiplyClicked) {
       previousOperator = "-";
       expression.textContent = `${previousResult} ${operator}`;
       if (firstNum !== null || secondNum !== null) {
@@ -172,6 +181,7 @@ const subtractNumbers = function() {
     };
  
     operatorClicked = true;
+    multiplyClicked = false;
     addClicked = false;
     subtractClicked = true;
     
@@ -181,8 +191,42 @@ const subtractNumbers = function() {
   });
 };
 
+const multiplyNumbers = function() {
+  multiply.addEventListener("click", () => {
+
+    operator = "x";
+
+    expression.textContent = `${firstNum} ${operator}`;
+    
+    if (operatorClicked && multiplyClicked) {
+      if (firstNum !== null || secondNum !== null) {
+        return;
+      };
+    } else if (addClicked || subtractClicked) {
+      previousOperator = "x";
+      expression.textContent = `${previousResult} ${operator}`;
+      if (firstNum !== null || secondNum !== null) {
+        if (!previousResult) {
+          expression.textContent = `${firstNum} ${operator}`;
+        };
+        return;
+      };
+    };
+
+    operatorClicked = true;
+    addClicked = false;
+    subtractClicked = false;
+    multiplyClicked = true;
+
+    calculateNumbers();
+
+    previousOperator = "x";
+  });
+};
+
 addNumbers();
 subtractNumbers();
+multiplyNumbers();
 
 //const calculate = function() {
   //equal.addEventListener("click", () => {
