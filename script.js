@@ -101,6 +101,7 @@ function operate(operator, firstNum, secondNum) {
   };
 };
 
+
 // Calculate numbers to display a correct result
 function calculateNumbers() {
   if (firstNum === null) {                                                                    // If previous calculations haven't been performed, then assign numericValue to firstNum
@@ -127,7 +128,7 @@ function calculateNumbers() {
 const addNumbers = function() {
   add.addEventListener("click", () => {
 
-    if (addClicked && previousOperator === "-") {                                             // If 'add' clicked, then 'subtract', and then 'add' again, then perform addition 
+    if (addClicked && previousOperator !== "+") {                                             // If 'add' clicked, then 'subtract', and then 'add' again, then perform addition 
       previousOperator = "+";
     };
 
@@ -165,7 +166,7 @@ const addNumbers = function() {
 const subtractNumbers = function() {
   subtract.addEventListener("click", () => {
 
-    if (subtractClicked && previousOperator === "+") {                                        // If 'subtract' was clicked, then 'add', and then 'subtract' again, then perform subtraction 
+    if (subtractClicked && previousOperator !== "-") {                                        // If 'subtract' was clicked, then 'add', and then 'subtract' again, then perform subtraction 
       previousOperator = "-";
     };
     
@@ -203,6 +204,10 @@ const subtractNumbers = function() {
 const multiplyNumbers = function() {
   multiply.addEventListener("click", () => {
 
+    if (multiplyClicked && previousOperator !== "x") {                                      
+      previousOperator = "x";
+    };
+
     operator = "x";
 
     expression.textContent = `${firstNum} ${operator}`;
@@ -236,6 +241,10 @@ const multiplyNumbers = function() {
 
 const divideNumbers = function() {
   divide.addEventListener("click", () => {
+
+    if (divideClicked && previousOperator !== "/") {                                      
+      previousOperator = "/";
+    };
 
     operator = "/";
 
