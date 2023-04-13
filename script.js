@@ -37,17 +37,24 @@ for (let i = 0; i <= 9; i++) {
 
 // Separate digits with space for better readability
 function createNumbersWithSpace() {
-  let spacedNumericValue = result.textContent.replace(/\s/g, '');                        
+  let spacedNumericValue = result.textContent.replace(/\s/g, '');  
+  let maxExpressionLength = expression.textContent;
 
-  if (spacedNumericValue.length > 12) {                                                       // If number digits exceed '15' in length
-    spacedNumericValue = spacedNumericValue.substring(0, 12);                                 // Display only the first 15 digit numbers (including any white space characters)
+  if (spacedNumericValue.length > 12) {                                                       // If number digits exceed '12' in length
+    spacedNumericValue = spacedNumericValue.substring(0, 12);                                 // Display only the first 12 digit numbers (including any white space characters)
+    if (maxExpressionLength.length > 12) {
+      maxExpressionLength = maxExpressionLength.substring(0, 12);
+      maxExpressionLength += ` ${operator}`;
+    };
   };
-
+  
   spacedNumericValue = spacedNumericValue.replace(/(\d)(?=(\d{3})+$)/g, '$1 ');               // Add space after every group of 3 digits
   result.textContent = spacedNumericValue;
+  expression.textContent = `${maxExpressionLength}`;
 
   numericValue = parseInt(spacedNumericValue.replace(/\s/g, ''));                             // Convert to integer
 };
+
 
 // Display numbers 
 function displayNumbers() {
@@ -132,7 +139,7 @@ const addNumbers = function() {
       if (firstNum !== null || secondNum !== null) {                                          // If first and second numbers are not empty
         return;                                                                               // Return nothing, unless same operator is clicked and number entered, return that operation result
       };
-    } else if (subtractClicked || multiplyClicked) {                                          // If 'subtract' was clicked or 'multiply', then 'add' was clicked, then return addition
+    } else if (subtractClicked || multiplyClicked || divideClicked) {                         // If 'subtract' was clicked or 'multiply', then 'add' was clicked, then return addition
       previousOperator = "+";
       expression.textContent = `${previousResult} ${operator}`;
       if (firstNum !== null || secondNum !== null) {
@@ -145,6 +152,7 @@ const addNumbers = function() {
 
     operatorClicked = true;
     multiplyClicked = false;
+    divideClicked = false;
     subtractClicked = false;
     addClicked = true;
     
@@ -169,7 +177,7 @@ const subtractNumbers = function() {
       if (firstNum !== null || secondNum !== null) {
         return;
       };
-    } else if (addClicked || multiplyClicked) {
+    } else if (addClicked || multiplyClicked || divideClicked) {
       previousOperator = "-";
       expression.textContent = `${previousResult} ${operator}`;
       if (firstNum !== null || secondNum !== null) {
@@ -182,6 +190,7 @@ const subtractNumbers = function() {
  
     operatorClicked = true;
     multiplyClicked = false;
+    divideClicked = false;
     addClicked = false;
     subtractClicked = true;
     
@@ -202,7 +211,7 @@ const multiplyNumbers = function() {
       if (firstNum !== null || secondNum !== null) {
         return;
       };
-    } else if (addClicked || subtractClicked) {
+    } else if (addClicked || subtractClicked || divideClicked) {
       previousOperator = "x";
       expression.textContent = `${previousResult} ${operator}`;
       if (firstNum !== null || secondNum !== null) {
@@ -215,6 +224,7 @@ const multiplyNumbers = function() {
 
     operatorClicked = true;
     addClicked = false;
+    divideClicked = false;
     subtractClicked = false;
     multiplyClicked = true;
 
@@ -224,9 +234,44 @@ const multiplyNumbers = function() {
   });
 };
 
+const divideNumbers = function() {
+  divide.addEventListener("click", () => {
+
+    operator = "/";
+
+    expression.textContent = `${firstNum} ${operator}`;
+
+    if (operatorClicked && divideClicked) {
+      if (firstNum !== null || secondNum !== null) {
+        return;
+      };
+    } else if (addClicked || subtractClicked || multiplyClicked) {
+      previousOperator = "/";
+      expression.textContent = `${previousResult} ${operator}`;
+      if (firstNum !== null || secondNum !== null) {
+        if (!previousResult) {
+          expression.textContent = `${firstNum} ${operator}`;
+        };
+        return;
+      };
+    };
+  
+    operatorClicked = true;
+    addClicked = false;
+    subtractClicked = false;
+    multiplyClicked = false;
+    divideClicked = true;
+
+    calculateNumbers();
+
+    previousOperator = "/";
+  });
+};
+
 addNumbers();
 subtractNumbers();
 multiplyNumbers();
+divideNumbers();
 
 //const calculate = function() {
   //equal.addEventListener("click", () => {
