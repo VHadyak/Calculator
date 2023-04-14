@@ -27,6 +27,7 @@ let divideClicked = false;
 let equalClicked = false;
 let numberClicked = false;
 let operatorClicked = false;
+let scientificNotation = false;
 
 // Include 10 number buttons
 const numButtons = [];
@@ -35,26 +36,20 @@ for (let i = 0; i <= 9; i++) {
   numButtons[i] = document.querySelector("#num" + i);
 }; 
 
-// Separate digits with space for better readability
-function createNumbersWithSpace() {
-  let spacedNumericValue = result.textContent.replace(/\s/g, '');  
-  let maxExpressionLength = expression.textContent;
+// Express numbers in scientific notation if it's too big
+function createScientificNotation() {
+  let scientificResult = result.textContent;
+  scientificNotation = true;
 
-  if (spacedNumericValue.length > 12) {                                                       // If number digits exceed '12' in length
-    spacedNumericValue = spacedNumericValue.substring(0, 12);                                 // Display only the first 12 digit numbers (including any white space characters)
-    if (maxExpressionLength.length > 12) {
-      maxExpressionLength = maxExpressionLength.substring(0, 12);
-      maxExpressionLength += ` ${operator}`;
+  if (previousOperator !== null && (operator !== null)) {
+    if (scientificResult.length > 12) {
+      scientificResult = Number.parseFloat(scientificResult).toExponential(5);
+      result.textContent = scientificResult;
+      expression.textContent = ` ${scientificResult} ${operator}`;;
     };
   };
-  
-  spacedNumericValue = spacedNumericValue.replace(/(\d)(?=(\d{3})+$)/g, '$1 ');               // Add space after every group of 3 digits
-  result.textContent = spacedNumericValue;
-  expression.textContent = `${maxExpressionLength}`;
-
-  numericValue = parseInt(spacedNumericValue.replace(/\s/g, ''));                             // Convert to integer
+  return scientificResult;
 };
-
 
 // Display numbers 
 function displayNumbers() {
@@ -77,9 +72,9 @@ function displayNumbers() {
         result.textContent = "";
         divideClicked = false;
       };
-
-      result.textContent += number;     
-      createNumbersWithSpace();
+      
+      result.textContent += number;
+      numericValue = parseFloat(result.textContent);   
     });
   });
 };
@@ -101,14 +96,12 @@ function operate(operator, firstNum, secondNum) {
   };
 };
 
-
 // Calculate numbers to display a correct result
 function calculateNumbers() {
   if (firstNum === null) {                                                                    // If previous calculations haven't been performed, then assign numericValue to firstNum
     firstNum = numericValue;
     expression.textContent = `${firstNum} ${operator} `;
     result.textContent = firstNum;
-    createNumbersWithSpace();
   } else {                                                                                    // If firstNum has a value
     secondNum = numericValue;                                                                 // Assign numericValue to secondNum after operator was clicked
     if (previousResult === null) {                                                            // If previousResult does not exist
@@ -121,7 +114,7 @@ function calculateNumbers() {
     previousResult = firstNum;                                                                // Update previousResult after operation
     expression.textContent = `${previousResult} ${operator} `;
     result.textContent = previousResult;
-    createNumbersWithSpace();
+    createScientificNotation();
   };
 };
 
@@ -134,15 +127,17 @@ const addNumbers = function() {
 
     operator = "+";
 
-    expression.textContent = `${firstNum} ${operator}`;
-
     if (operatorClicked && addClicked) {                                                      // If operator was clicked ("+"), and clicked again ("+") right after
       if (firstNum !== null || secondNum !== null) {                                          // If first and second numbers are not empty
         return;                                                                               // Return nothing, unless same operator is clicked and number entered, return that operation result
       };
     } else if (subtractClicked || multiplyClicked || divideClicked) {                         // If 'subtract' was clicked or 'multiply', then 'add' was clicked, then return addition
       previousOperator = "+";
-      expression.textContent = `${previousResult} ${operator}`;
+      if (scientificNotation) {
+        expression.textContent = `${createScientificNotation()} ${operator}`;
+      } else {
+        expression.textContent = `${previousResult} ${operator}`;
+      };
       if (firstNum !== null || secondNum !== null) {
         if (!previousResult) {
           expression.textContent = `${firstNum} ${operator}`;
@@ -180,7 +175,11 @@ const subtractNumbers = function() {
       };
     } else if (addClicked || multiplyClicked || divideClicked) {
       previousOperator = "-";
-      expression.textContent = `${previousResult} ${operator}`;
+      if (scientificNotation) {
+        expression.textContent = `${createScientificNotation()} ${operator}`;
+      } else {
+        expression.textContent = `${previousResult} ${operator}`;
+      };
       if (firstNum !== null || secondNum !== null) {
         if (!previousResult) {
           expression.textContent = `${firstNum} ${operator}`;
@@ -218,7 +217,11 @@ const multiplyNumbers = function() {
       };
     } else if (addClicked || subtractClicked || divideClicked) {
       previousOperator = "x";
-      expression.textContent = `${previousResult} ${operator}`;
+      if (scientificNotation) {
+        expression.textContent = `${createScientificNotation()} ${operator}`;
+      } else {
+        expression.textContent = `${previousResult} ${operator}`;
+      };
       if (firstNum !== null || secondNum !== null) {
         if (!previousResult) {
           expression.textContent = `${firstNum} ${operator}`;
@@ -256,7 +259,11 @@ const divideNumbers = function() {
       };
     } else if (addClicked || subtractClicked || multiplyClicked) {
       previousOperator = "/";
-      expression.textContent = `${previousResult} ${operator}`;
+      if (scientificNotation) {
+        expression.textContent = `${createScientificNotation()} ${operator}`;
+      } else {
+        expression.textContent = `${previousResult} ${operator}`;
+      };
       if (firstNum !== null || secondNum !== null) {
         if (!previousResult) {
           expression.textContent = `${firstNum} ${operator}`;
