@@ -27,7 +27,9 @@ let divideClicked = false;
 let equalClicked = false;
 let numberClicked = false;
 let operatorClicked = false;
+
 let scientificNotation = false;
+let displayError = false;
 
 // Include 10 number buttons
 const numButtons = [];
@@ -104,12 +106,38 @@ function createScientificNotation() {
   return scientificResult;
 };
 
+// Reset calculator
+function resetCalculator() {
+  result.textContent = "0";
+  expression.textContent = "";
+  firstNum = null;
+  secondNum = null;
+  operator = null;
+  previousOperator = null;
+  previousResult = null;
+  operatorClicked = false;
+  addClicked = false;
+  subtractClicked = false;
+  multiplyClicked = false;
+  divideClicked = false;
+  scientificNotation = false;
+  displayError = false;
+};
+
 
 // Display numbers 
 function displayNumbers() {
   numButtons.forEach((button) => {
     const number = button.textContent;
     button.addEventListener("click", () => {
+
+      if (displayError) {
+        resetCalculator();
+        console.log("RESET CALCULATOR");
+        result.textContent = "";
+        displayError = false;
+      };
+
       numberClicked = true;
 
       // Clear 'result' container every-time a new number is clicked after operator 
@@ -145,7 +173,11 @@ function operate(operator, firstNum, secondNum) {
     case "x":
       return firstNum * secondNum;
     case "/":
-      return firstNum / secondNum;
+      if (secondNum === 0) {
+        return null;
+      } else {
+        return firstNum / secondNum;
+      };
     default:
       return null;
   };
@@ -157,28 +189,45 @@ function calculateNumbers() {
     firstNum = numericValue;
     expression.textContent = `${firstNum} ${operator} `;
     result.textContent = firstNum;
-  
   } else {                                                                                    // If firstNum has a value
     secondNum = numericValue;                                                                 // Assign numericValue to secondNum after operator was clicked
     if (previousResult === null) {                                                            // If previousResult does not exist
       previousResult = firstNum;                                                              // Assign the value of firstNum as previousResult
     } else {                                                                                  // If previousResult has a value
       firstNum = operate(operator, firstNum, secondNum);                                      // Perform calculation of the previous firstNum and new secondNum value
-      result.textContent = firstNum;
+      result.textContent = firstNum; 
     };
-    
     firstNum = operate(previousOperator || operator, previousResult, secondNum);              // Perform calculation using previousOperator and previousResult, and new secondNum
     previousResult = firstNum;                                                                // Update previousResult after operation
     expression.textContent = `${previousResult} ${operator} `;
     result.textContent = previousResult;
-
     createScientificNotation();
-   
+  };
+
+  // Display "ERROR" when dividing by zero
+  if ((previousOperator === "/" && operator !== null) && secondNum === 0) {
+    result.textContent = "ERROR";
+    expression.textContent = "";
+    firstNum = null;
+    secondNum = null;
+    previousResult = null;
+    displayError = true;
   };
 };
 
 const addNumbers = function() {
   add.addEventListener("click", () => {
+
+    if (displayError) {
+      resetCalculator();
+      console.log("RESET CALCULATOR2");
+      expression.textContent = "";
+      result.textContent = "0";
+      displayError = true;
+      return;
+    } else {
+      displayError = false;
+    };
 
     if (addClicked && previousOperator !== "+") {                                             // If 'add' clicked, then 'other operator' was clicked, and then 'add' again, then perform addition 
       previousOperator = "+";
@@ -222,12 +271,23 @@ const addNumbers = function() {
 const subtractNumbers = function() {
   subtract.addEventListener("click", () => {
 
+    if (displayError) {
+      resetCalculator();
+      console.log("RESET CALCULATOR2");
+      expression.textContent = "";
+      result.textContent = "0";
+      displayError = true;
+      return;
+    } else {
+      displayError = false;
+    };
+
     if (subtractClicked && previousOperator !== "-") {                                       
       previousOperator = "-";
     };
-    
-    operator = "-";
 
+    operator = "-";
+   
     if (scientificNotation) {                                                           
       expression.textContent = `${createScientificNotation()} ${operator}`;
     } else {
@@ -240,13 +300,13 @@ const subtractNumbers = function() {
         return;
       };
     } else if (addClicked || multiplyClicked || divideClicked) {
-      previousOperator = "-";
-      if (firstNum !== null || secondNum !== null) {
-        if (!previousResult) {
-          expression.textContent = `${firstNum} ${operator}`;
+        previousOperator = "-";
+        if (firstNum !== null || secondNum !== null) {
+          if (!previousResult) {
+            expression.textContent = `${firstNum} ${operator}`;
+          };
+          return;
         };
-        return;
-      };
     };
  
     operatorClicked = true;
@@ -256,13 +316,24 @@ const subtractNumbers = function() {
     subtractClicked = true;
     
     calculateNumbers();
-
     previousOperator = "-";
   });
 };
 
+
 const multiplyNumbers = function() {
   multiply.addEventListener("click", () => {
+
+    if (displayError) {
+      resetCalculator();
+      console.log("RESET CALCULATOR2");
+      expression.textContent = "";
+      result.textContent = "0";
+      displayError = true;
+      return;
+    } else {
+      displayError = false;
+    };
 
     if (multiplyClicked && previousOperator !== "x") {                                      
       previousOperator = "x";
@@ -305,6 +376,17 @@ const multiplyNumbers = function() {
 
 const divideNumbers = function() {
   divide.addEventListener("click", () => {
+
+    if (displayError) {
+      resetCalculator();
+      console.log("RESET CALCULATOR2");
+      expression.textContent = "";
+      result.textContent = "0";
+      displayError = true;
+      return;
+    } else {
+      displayError = false;
+    };
 
     if (divideClicked && previousOperator !== "/") {                                      
       previousOperator = "/";
