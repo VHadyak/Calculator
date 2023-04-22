@@ -86,14 +86,15 @@ function displayNumbers() {
       };
       
       result.textContent += number;
-      numericValue = maxNumberDisplay();
+      numericValue = displayMaxNumberLength();
       result.textContent = numericValue;  
     });
   });
 };
 displayNumbers();
 
-function maxNumberDisplay() {
+// 
+function displayMaxNumberLength() {
   let numDisplay = result.textContent;
   let numParts = numDisplay.split(".");                                                       // Separate a number into numbers 'before' and 'after' a decimal (if there are any)
 
@@ -184,7 +185,7 @@ function calculateNumbers() {
   if (firstNum === null) {                                                                    // If previous calculations haven't been performed, then assign numericValue to firstNum
     firstNum = numericValue;
     expression.textContent = `${firstNum} ${operator} `;
-    result.textContent = `${firstNum}`;
+    result.textContent = firstNum;
   } else {                                                                                    // If firstNum has a value
     secondNum = numericValue;                                                                 // Assign numericValue to secondNum after operator was clicked
     if (previousResult === null) {                                                            // If previousResult does not exist
