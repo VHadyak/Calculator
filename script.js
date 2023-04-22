@@ -4,7 +4,7 @@
 const result = document.querySelector(".result");
 const expression = document.querySelector(".expression");
 
-// Operation variables
+// Operator variables
 const add = document.querySelector("#addition");
 const subtract = document.querySelector("#subtraction");
 const divide = document.querySelector("#division");
@@ -38,77 +38,9 @@ for (let i = 0; i <= 9; i++) {
   numButtons[i] = document.querySelector("#num" + i);
 }; 
 
-// Space out the numbers for better readability
-//function createSpacedNumbers() {
-  
-//};
-
-// Express numbers in scientific notation if the output of the number is too big or too small
-function createScientificNotation() {
-  let scientificResult = result.textContent;
-  
-  if (previousOperator !== null && operator !== null) {
-
-    if (!scientificResult.includes(".") && !scientificResult.includes("e")) {
-      scientificResult = parseInt(scientificResult).toFixed(1).replace(/\.?0+$/, '');
-      if (scientificResult >= 0 && scientificResult > 999999999999) {
-        scientificResult = Number.parseFloat(scientificResult).toExponential(5);  
-      } else if (scientificResult >= 0 && scientificResult <= 999999999999) {
-        if (scientificResult.includes("e")) {
-          scientificResult = parseInt(scientificResult).toFixed(1).replace(/\.?0+$/, '');
-        };
-      } else if (scientificResult < 0 && scientificResult < -999999999999) {
-        scientificResult = Number.parseFloat(scientificResult).toExponential(5);
-      } else if (scientificResult < 0 && scientificResult >= -999999999999) {
-        scientificResult = parseInt(scientificResult).toFixed(1).replace(/\.?0+$/, '');
-      };  
-
-    } else if (scientificResult.includes("e")) {
-      let exponent = parseInt(scientificResult.split("e")[1]);
-      if (exponent > 20) {
-        scientificResult = Number.parseFloat(scientificResult).toExponential(5);
-      } else if (exponent < 0) {                                   
-        scientificResult = Number.parseFloat(scientificResult).toExponential(5);
-      };
-
-    } else if (scientificResult.includes(".") && !scientificResult.includes("e")) {
-      if (parseFloat(scientificResult) >= 1 && parseFloat(scientificResult) > 999999999999) {
-        scientificResult = Number.parseFloat(scientificResult).toExponential(5);
-      } else if (parseFloat(scientificResult) >= 1 && parseFloat(scientificResult) <= 999999999999) {
-        scientificResult = parseFloat(scientificResult).toFixed(1).replace(/\.?0+$/, '');
-      } else if (parseFloat(scientificResult) > 0 && parseFloat(scientificResult) < 1) {
-
-        if (parseFloat(scientificResult) < 0.00001) {
-          scientificResult = parseFloat(scientificResult).toExponential(5);
-        } else {
-          scientificResult = parseFloat(scientificResult).toFixed(5).replace(/\.?0+$/, '');
-        };
-
-      } else if (parseFloat(scientificResult) < 0 && parseFloat(scientificResult) > -1) {
-        if (parseFloat(scientificResult) > -0.00001) {
-          scientificResult = parseFloat(scientificResult).toExponential(5);
-        } else {
-          scientificResult = parseFloat(scientificResult).toFixed(5).replace(/\.?0+$/, '');
-        };
-
-      } else if (parseFloat(scientificResult) <= -1 && parseFloat(scientificResult) < -999999999999) {
-        scientificResult = Number.parseFloat(scientificResult).toExponential(5);
-      } else if (parseFloat(scientificResult) <= -1 && parseFloat(scientificResult) >= -999999999999) {
-        scientificResult = parseFloat(scientificResult).toFixed(1).replace(/\.?0+$/, '');
-      };
-    };
-  };
-  
-  scientificNotation = true;
-  result.textContent = scientificResult;
-  expression.textContent = ` ${scientificResult} ${operator}`;
-  
-  return scientificResult;
-};
-
 // Reset calculator
 function resetCalculator() {
-  result.textContent = "0";
+  result.textContent = "";
   expression.textContent = "";
   firstNum = null;
   secondNum = null;
@@ -123,7 +55,6 @@ function resetCalculator() {
   scientificNotation = false;
   displayError = false;
 };
-
 
 // Display numbers 
 function displayNumbers() {
@@ -163,6 +94,55 @@ function displayNumbers() {
 };
 displayNumbers();
 
+
+// Format numbers with decimal places, and convert to scientific notation if number is too large or small
+function formatNumbers() {
+  let scientificResult = result.textContent;
+  if (previousOperator !== null && operator !== null) {
+    // Case for integers without decimals and scientific notations
+    if (!scientificResult.includes(".") && !scientificResult.includes("e")) {
+      let intNum = parseInt(scientificResult);
+      if (intNum >= 0) {
+        if (Math.abs(intNum) >= 1e+12) {                                                      // 1e+12 short for 1,000,000,000,000
+          scientificResult = Number.parseFloat(intNum).toExponential(5);
+        } else {
+          scientificResult = intNum.toFixed(1).replace(/\.?0+$/, '');                         // Removes any trailing 0s and rounds it to 1 decimal place
+        };
+      } else {                                                                                // Case for negative integers
+        if (Math.abs(intNum) >= 1e+12) {
+          scientificResult = Number.parseFloat(intNum).toExponential(5);
+        } else {
+          scientificResult = intNum.toFixed(1).replace(/\.?0+$/, '');
+        };
+      };
+    // Case for scientific notations
+    } else if (scientificResult.includes("e")) {
+      let sciExponent = parseInt(scientificResult.split("e")[1]);
+      if (sciExponent > 20 || sciExponent < 0) {                                              // If exponent of scientific notation is greater than 20 or lower than 0
+        scientificResult = Number.parseFloat(scientificResult).toExponential(5);              // then keep rounding to 5 decimal places
+      };
+    // Case for decimal numbers (excluding scientific notations)
+    } else if (scientificResult.includes(".") && !scientificResult.includes("e")) {
+      const decimalNum = parseFloat(scientificResult);
+      const absoluteNum = Math.abs(decimalNum);
+      if (absoluteNum >= 1e+12) {
+        scientificResult = decimalNum.toExponential(5);
+      } else if (absoluteNum >= 1) {                                                          // If greater or equal to 1, round to 1 decimal
+        scientificResult = decimalNum.toFixed(1).replace(/\.?0+$/, '');
+      } else if (absoluteNum >= 0.00001 && absoluteNum < 1) {                                 // If between 0.00001 and 0.99999, round to 5 decimals
+        scientificResult = decimalNum.toFixed(5).replace(/\.?0+$/, '');                       
+      } else {                                                                                // if less than 0.00001, convert to scientific notation
+        scientificResult = decimalNum.toExponential(5);
+      };
+    };
+  };
+  scientificNotation = true;
+  result.textContent = scientificResult;
+  expression.textContent = ` ${scientificResult} ${operator}`;
+  
+  return scientificResult;
+};
+
 // Perform arithmetic operations
 function operate(operator, firstNum, secondNum) {
   switch (operator) {
@@ -201,7 +181,7 @@ function calculateNumbers() {
     previousResult = firstNum;                                                                // Update previousResult after operation
     expression.textContent = `${previousResult} ${operator} `;
     result.textContent = previousResult;
-    createScientificNotation();
+    formatNumbers();
   };
 
   // Display "ERROR" when dividing by zero
@@ -215,18 +195,21 @@ function calculateNumbers() {
   };
 };
 
+// Handle error after division by 0
+function errorHandler() {
+  resetCalculator();
+  console.log("RESET CALCULATOR2");
+  expression.textContent = "";
+  result.textContent = "0";
+  displayError = true;
+};
+
 const addNumbers = function() {
   add.addEventListener("click", () => {
 
     if (displayError) {
-      resetCalculator();
-      console.log("RESET CALCULATOR2");
-      expression.textContent = "";
-      result.textContent = "0";
-      displayError = true;
+      errorHandler();
       return;
-    } else {
-      displayError = false;
     };
 
     if (addClicked && previousOperator !== "+") {                                             // If 'add' clicked, then 'other operator' was clicked, and then 'add' again, then perform addition 
@@ -236,7 +219,7 @@ const addNumbers = function() {
     operator = "+";
 
     if (scientificNotation) {                                                           
-      expression.textContent = `${createScientificNotation()} ${operator}`;
+      expression.textContent = `${formatNumbers()} ${operator}`;
     } else {
       scientificNotation = false;
       expression.textContent = `${firstNum} ${operator}`;
@@ -270,16 +253,10 @@ const addNumbers = function() {
 
 const subtractNumbers = function() {
   subtract.addEventListener("click", () => {
-
+    
     if (displayError) {
-      resetCalculator();
-      console.log("RESET CALCULATOR2");
-      expression.textContent = "";
-      result.textContent = "0";
-      displayError = true;
+      errorHandler();
       return;
-    } else {
-      displayError = false;
     };
 
     if (subtractClicked && previousOperator !== "-") {                                       
@@ -289,7 +266,7 @@ const subtractNumbers = function() {
     operator = "-";
    
     if (scientificNotation) {                                                           
-      expression.textContent = `${createScientificNotation()} ${operator}`;
+      expression.textContent = `${formatNumbers()} ${operator}`;
     } else {
       scientificNotation = false;
       expression.textContent = `${firstNum} ${operator}`;
@@ -320,19 +297,12 @@ const subtractNumbers = function() {
   });
 };
 
-
 const multiplyNumbers = function() {
   multiply.addEventListener("click", () => {
 
     if (displayError) {
-      resetCalculator();
-      console.log("RESET CALCULATOR2");
-      expression.textContent = "";
-      result.textContent = "0";
-      displayError = true;
+      errorHandler();
       return;
-    } else {
-      displayError = false;
     };
 
     if (multiplyClicked && previousOperator !== "x") {                                      
@@ -342,7 +312,7 @@ const multiplyNumbers = function() {
     operator = "x";
 
     if (scientificNotation) {                                                           
-      expression.textContent = `${createScientificNotation()} ${operator}`;
+      expression.textContent = `${formatNumbers()} ${operator}`;
     } else {
       scientificNotation = false;
       expression.textContent = `${firstNum} ${operator}`;
@@ -378,14 +348,8 @@ const divideNumbers = function() {
   divide.addEventListener("click", () => {
 
     if (displayError) {
-      resetCalculator();
-      console.log("RESET CALCULATOR2");
-      expression.textContent = "";
-      result.textContent = "0";
-      displayError = true;
+      errorHandler();
       return;
-    } else {
-      displayError = false;
     };
 
     if (divideClicked && previousOperator !== "/") {                                      
@@ -395,7 +359,7 @@ const divideNumbers = function() {
     operator = "/";
 
      if (scientificNotation) {                                                           
-      expression.textContent = `${createScientificNotation()} ${operator}`;
+      expression.textContent = `${formatNumbers()} ${operator}`;
     } else {
       scientificNotation = false;
       expression.textContent = `${firstNum} ${operator}`;
