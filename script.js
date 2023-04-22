@@ -64,14 +64,13 @@ function displayNumbers() {
 
       if (displayError) {
         resetCalculator();
-        console.log("RESET CALCULATOR");
         result.textContent = "";
         displayError = false;
       };
 
       numberClicked = true;
 
-      // Clear 'result' container every-time a new number is clicked after operator 
+      // Clear 'result' display every-time a new number is clicked after operator 
       if (addClicked) {                                     
         result.textContent = "";
         addClicked = false;
@@ -87,30 +86,47 @@ function displayNumbers() {
       };
       
       result.textContent += number;
-      numericValue = parseFloat(result.textContent);
-      //createSpacedNumbers();   
+      numericValue = maxNumberDisplay();
+      result.textContent = numericValue;  
     });
   });
 };
 displayNumbers();
 
+function maxNumberDisplay() {
+  let numDisplay = result.textContent;
+  let numParts = numDisplay.split(".");                                                       // Separate a number into numbers 'before' and 'after' a decimal (if there are any)
 
-// Format numbers with decimal places, and convert to scientific notation if number is too large or small
+  if (numParts[0].length > 9) {                                                               // If integer number is greater than 9, display only 9 digits
+    numParts[0] = numParts[0].substring(0, 9);  
+  };
+
+  if (numParts.length > 1) {                                                                  // Check if there decimal numbers
+    numDisplay = numParts[0] + "." + numParts[1];                                             // Include any digits before the decimal, and after
+  } else {
+    numDisplay = numParts[0];
+  };
+
+  return parseFloat(numDisplay);
+};
+
+// Format numbers with decimal places, and convert to scientific notation if number is too large or too small
 function formatNumbers() {
   let scientificResult = result.textContent;
+ 
   if (previousOperator !== null && operator !== null) {
     // Case for integers without decimals and scientific notations
     if (!scientificResult.includes(".") && !scientificResult.includes("e")) {
       let intNum = parseInt(scientificResult);
       if (intNum >= 0) {
-        if (Math.abs(intNum) >= 1e+12) {                                                      // 1e+12 short for 1,000,000,000,000
-          scientificResult = Number.parseFloat(intNum).toExponential(5);
+        if (Math.abs(intNum) >= 1e+9) {                                                                           // 1e+9 short for 1,000,000,000
+          scientificResult = Number.parseFloat(intNum).toExponential(5).replace(/(\.?0+)?e/, 'e');                // Removes any trailing 0s for scientific notation
         } else {
-          scientificResult = intNum.toFixed(1).replace(/\.?0+$/, '');                         // Removes any trailing 0s and rounds it to 1 decimal place
+          scientificResult = intNum.toFixed(1).replace(/\.?0+$/, '');                                             // Removes any trailing 0s and rounds it to 1 decimal place
         };
-      } else {                                                                                // Case for negative integers
-        if (Math.abs(intNum) >= 1e+12) {
-          scientificResult = Number.parseFloat(intNum).toExponential(5);
+      } else {                                                                                                    // Case for negative integers
+        if (Math.abs(intNum) >= 1e+9) {
+          scientificResult = Number.parseFloat(intNum).toExponential(5).replace(/(\.?0+)?e/, 'e');
         } else {
           scientificResult = intNum.toFixed(1).replace(/\.?0+$/, '');
         };
@@ -118,28 +134,28 @@ function formatNumbers() {
     // Case for scientific notations
     } else if (scientificResult.includes("e")) {
       let sciExponent = parseInt(scientificResult.split("e")[1]);
-      if (sciExponent > 20 || sciExponent < 0) {                                              // If exponent of scientific notation is greater than 20 or lower than 0
-        scientificResult = Number.parseFloat(scientificResult).toExponential(5);              // then keep rounding to 5 decimal places
+      if (sciExponent > 20 || sciExponent < 0) {                                                                  // If exponent of scientific notation is greater than 20 or lower than 0
+        scientificResult = Number.parseFloat(scientificResult).toExponential(5).replace(/(\.?0+)?e/, 'e');        // then keep rounding to 5 decimal places
       };
     // Case for decimal numbers (excluding scientific notations)
     } else if (scientificResult.includes(".") && !scientificResult.includes("e")) {
       const decimalNum = parseFloat(scientificResult);
       const absoluteNum = Math.abs(decimalNum);
-      if (absoluteNum >= 1e+12) {
-        scientificResult = decimalNum.toExponential(5);
-      } else if (absoluteNum >= 1) {                                                          // If greater or equal to 1, round to 1 decimal
+      if (absoluteNum >= 1e+9) {
+        scientificResult = decimalNum.toExponential(5).replace(/(\.?0+)?e/, 'e');
+      } else if (absoluteNum >= 1) {                                                                              // If greater or equal to 1, round to 1 decimal
         scientificResult = decimalNum.toFixed(1).replace(/\.?0+$/, '');
-      } else if (absoluteNum >= 0.00001 && absoluteNum < 1) {                                 // If between 0.00001 and 0.99999, round to 5 decimals
+      } else if (absoluteNum >= 0.00001 && absoluteNum < 1) {                                                     // If between 0.00001 and 0.99999, round to 5 decimals
         scientificResult = decimalNum.toFixed(5).replace(/\.?0+$/, '');                       
-      } else {                                                                                // if less than 0.00001, convert to scientific notation
-        scientificResult = decimalNum.toExponential(5);
+      } else {                                                                                                    // if less than 0.00001, convert to scientific notation
+        scientificResult = decimalNum.toExponential(5).replace(/(\.?0+)?e/, 'e');
       };
     };
   };
   scientificNotation = true;
   result.textContent = scientificResult;
   expression.textContent = ` ${scientificResult} ${operator}`;
-  
+
   return scientificResult;
 };
 
@@ -153,7 +169,7 @@ function operate(operator, firstNum, secondNum) {
     case "x":
       return firstNum * secondNum;
     case "/":
-      if (secondNum === 0) {
+      if (secondNum === 0) {                                                                  // Division by 0
         return null;
       } else {
         return firstNum / secondNum;
@@ -168,7 +184,7 @@ function calculateNumbers() {
   if (firstNum === null) {                                                                    // If previous calculations haven't been performed, then assign numericValue to firstNum
     firstNum = numericValue;
     expression.textContent = `${firstNum} ${operator} `;
-    result.textContent = firstNum;
+    result.textContent = `${firstNum}`;
   } else {                                                                                    // If firstNum has a value
     secondNum = numericValue;                                                                 // Assign numericValue to secondNum after operator was clicked
     if (previousResult === null) {                                                            // If previousResult does not exist
@@ -198,13 +214,12 @@ function calculateNumbers() {
 // Handle error after division by 0
 function errorHandler() {
   resetCalculator();
-  console.log("RESET CALCULATOR2");
   expression.textContent = "";
   result.textContent = "0";
   displayError = true;
 };
 
-const addNumbers = function() {
+function addNumbers() {
   add.addEventListener("click", () => {
 
     if (displayError) {
@@ -251,7 +266,7 @@ const addNumbers = function() {
   });
 };
 
-const subtractNumbers = function() {
+function subtractNumbers() {
   subtract.addEventListener("click", () => {
     
     if (displayError) {
@@ -297,7 +312,7 @@ const subtractNumbers = function() {
   });
 };
 
-const multiplyNumbers = function() {
+function multiplyNumbers() {
   multiply.addEventListener("click", () => {
 
     if (displayError) {
@@ -344,7 +359,7 @@ const multiplyNumbers = function() {
   });
 };
 
-const divideNumbers = function() {
+function divideNumbers() {
   divide.addEventListener("click", () => {
 
     if (displayError) {
@@ -395,6 +410,8 @@ addNumbers();
 subtractNumbers();
 multiplyNumbers();
 divideNumbers();
+
+
 
 //const calculate = function() {
   //equal.addEventListener("click", () => {
