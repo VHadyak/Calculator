@@ -93,7 +93,7 @@ function displayNumbers() {
 };
 displayNumbers();
 
-// 
+// Display a number of max to 9 digits (not including decimal numbers)
 function displayMaxNumberLength() {
   let numDisplay = result.textContent;
   let numParts = numDisplay.split(".");                                                       // Separate a number into numbers 'before' and 'after' a decimal (if there are any)
@@ -239,6 +239,11 @@ function addNumbers() {
     } else {
       scientificNotation = false;
       expression.textContent = `${firstNum} ${operator}`;
+      if (!numberClicked && previousOperator === null) {                                      // Case if no number was clicked before operator at the start
+        expression.textContent = "";
+        result.textContent = "0";
+        return;
+      };
     };
 
     if (operatorClicked && addClicked) {                                                      // If operator was clicked ("+"), and clicked again ("+") right after
@@ -286,6 +291,11 @@ function subtractNumbers() {
     } else {
       scientificNotation = false;
       expression.textContent = `${firstNum} ${operator}`;
+      if (!numberClicked && previousOperator === null) {
+        expression.textContent = "";
+        result.textContent = "0";
+        return;
+      };
     };
    
     if (operatorClicked && subtractClicked) {
@@ -332,6 +342,11 @@ function multiplyNumbers() {
     } else {
       scientificNotation = false;
       expression.textContent = `${firstNum} ${operator}`;
+      if (!numberClicked && previousOperator === null) {
+        expression.textContent = "";
+        result.textContent = "0";
+        return;
+      };
     };
     
     if (operatorClicked && multiplyClicked) {
@@ -365,6 +380,7 @@ function divideNumbers() {
 
     if (displayError) {
       errorHandler();
+      console.log("true");
       return;
     };
 
@@ -379,6 +395,11 @@ function divideNumbers() {
     } else {
       scientificNotation = false;
       expression.textContent = `${firstNum} ${operator}`;
+      if (!numberClicked && previousOperator === null) {
+        expression.textContent = "";
+        result.textContent = "0";
+        return;
+      };
     };
 
     if (operatorClicked && divideClicked) {
