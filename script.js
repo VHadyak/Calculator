@@ -11,6 +11,9 @@ const divide = document.querySelector("#division");
 const multiply = document.querySelector("#multiplication");
 const equal = document.querySelector("#equals");
 
+// Calculator extra feature variables
+const clearAll = document.querySelector("#ac");
+
 // Values
 let numericValue = 0;
 let operator = "";
@@ -27,7 +30,9 @@ let divideClicked = false;
 let equalClicked = false;
 let numberClicked = false;
 let operatorClicked = false;
+let resetClicked = false;
 
+// Boolean function status
 let scientificNotation = false;
 let displayError = false;
 
@@ -38,15 +43,15 @@ for (let i = 0; i <= 9; i++) {
   numButtons[i] = document.querySelector("#num" + i);
 }; 
 
-// Reset calculator
-function resetCalculator() {
+// Reset
+function reset() {
   result.textContent = "";
   expression.textContent = "";
   firstNum = null;
   secondNum = null;
   operator = null;
-  previousOperator = null;
   previousResult = null;
+  previousOperator = null;
   operatorClicked = false;
   addClicked = false;
   subtractClicked = false;
@@ -54,6 +59,7 @@ function resetCalculator() {
   divideClicked = false;
   scientificNotation = false;
   displayError = false;
+  resetClicked = true;
 };
 
 // Display numbers 
@@ -69,7 +75,7 @@ function displayNumbers() {
       };
 
       numberClicked = true;
-
+       
       // Clear 'result' display every-time a new number is clicked after operator 
       if (addClicked) {                                     
         result.textContent = "";
@@ -83,6 +89,8 @@ function displayNumbers() {
       } else if (divideClicked) {
         result.textContent = "";
         divideClicked = false;
+      } else if (resetClicked) {                                                              // After 'AC' is clicked and consecutive operator clicks, it will always be in 'reset' mode ...
+        resetClicked = false;                                                                 // Unless there is new random number clicked, then it will disable the reset mode
       };
       
       result.textContent += number;
@@ -214,14 +222,30 @@ function calculateNumbers() {
 
 // Handle error after division by 0
 function errorHandler() {
-  resetCalculator();
+  reset();
   expression.textContent = "";
   result.textContent = "0";
   displayError = true;
 };
 
+
+// Reset everything after reset button is clicked
+function resetCalculator() {
+  clearAll.addEventListener("click", () => {
+    reset();
+    result.textContent = "0";
+  });
+};
+resetCalculator();
+
 function addNumbers() {
   add.addEventListener("click", () => {
+
+    if (resetClicked) {                                                                       // If 'AC' clicked, stay in reset mode, unless a new number is entered
+      reset();
+      result.textContent = "0";
+      return;
+    };
 
     if (displayError) {
       errorHandler();
@@ -267,13 +291,18 @@ function addNumbers() {
     addClicked = true;
     
     calculateNumbers();
-
-    previousOperator = "+";                                                                   // previousOperator behaves as current operator 
+    previousOperator = "+";                                                                   // previousOperator behaves as current operator
   });
 };
 
 function subtractNumbers() {
   subtract.addEventListener("click", () => {
+
+    if (resetClicked) {                                                                     
+      reset();
+      result.textContent = "0";
+      return;
+    };
     
     if (displayError) {
       errorHandler();
@@ -326,6 +355,12 @@ function subtractNumbers() {
 function multiplyNumbers() {
   multiply.addEventListener("click", () => {
 
+    if (resetClicked) {                                                                     
+      reset();
+      result.textContent = "0";
+      return;
+    };
+
     if (displayError) {
       errorHandler();
       return;
@@ -370,7 +405,6 @@ function multiplyNumbers() {
     multiplyClicked = true;
 
     calculateNumbers();
-
     previousOperator = "x";
   });
 };
@@ -378,9 +412,14 @@ function multiplyNumbers() {
 function divideNumbers() {
   divide.addEventListener("click", () => {
 
+    if (resetClicked) {                                                                     
+      reset();
+      result.textContent = "0";
+      return;
+    };
+
     if (displayError) {
       errorHandler();
-      console.log("true");
       return;
     };
 
@@ -423,7 +462,6 @@ function divideNumbers() {
     divideClicked = true;
 
     calculateNumbers();
-
     previousOperator = "/";
   });
 };
@@ -432,8 +470,6 @@ addNumbers();
 subtractNumbers();
 multiplyNumbers();
 divideNumbers();
-
-
 
 //const calculate = function() {
   //equal.addEventListener("click", () => {
