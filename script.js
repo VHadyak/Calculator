@@ -94,18 +94,32 @@ function displayNumbers() {
       };
       
       result.textContent += number;
-      numericValue = displayMaxNumberLength();
-      result.textContent = numericValue;  
+      
+      numericValue = spaceOutNumbers();
+      result.textContent = numericValue; 
+      
     });
   });
 };
 displayNumbers();
 
 // Display a number of max to 9 digits (not including decimal numbers)
+
+// Space out numbers for every 3 digits for better readability
+function spaceOutNumbers() {
+  let spacedOutput = result.textContent.replace(/\s+/g, '');
+  
+  if (spacedOutput.length >= 0) {
+    spacedOutput = spacedOutput.replace(/(\d)(?=(\d{3})+(?!\d|\.)|\.\d*$)/g, "$1 ");
+    console.log(spacedOutput);
+  };
+  return spacedOutput;
+};
+
 function displayMaxNumberLength() {
   let numDisplay = result.textContent;
   let numParts = numDisplay.split(".");                                                       // Separate a number into numbers 'before' and 'after' a decimal (if there are any)
-
+ 
   if (numParts[0].length > 9) {                                                               // If integer number is greater than 9, display only 9 digits
     numParts[0] = numParts[0].substring(0, 9);  
   };
@@ -119,7 +133,7 @@ function displayMaxNumberLength() {
   return parseFloat(numDisplay);
 };
 
-// Format numbers with decimal places, and convert to scientific notation if number is too large or too small
+// Format numbers with decimal places, and convert to scientific notation if the number is too large or too small
 function formatNumbers() {
   let scientificResult = result.textContent;
  
