@@ -74,6 +74,12 @@ function displayNumbers() {
         displayError = false;
       };
 
+      if (result.textContent === "0" && numberClicked) {
+        result.textContent = "";
+      } else if (result.textContent === "0" && !numberClicked) {
+        result.textContent = "";
+      };
+
       numberClicked = true;
        
       // Clear 'result' display every-time a new number is clicked after operator 
@@ -94,34 +100,24 @@ function displayNumbers() {
       };
       
       result.textContent += number;
+
+      numericValue = parseFloat(displayMaxNumberLength()); 
+      result.textContent = displayMaxNumberLength(); 
       
-      numericValue = spaceOutNumbers();
-      result.textContent = numericValue; 
-      
+      result.textContent = formatNumberWithSpaces();
+      numericValue = parseFloat(result.textContent.replace(/\s/g, ""));                       // Remove whitespace before parsing, and retain the whole value
     });
   });
 };
 displayNumbers();
 
 // Display a number of max to 9 digits (not including decimal numbers)
-
-// Space out numbers for every 3 digits for better readability
-function spaceOutNumbers() {
-  let spacedOutput = result.textContent.replace(/\s+/g, '');
-  
-  if (spacedOutput.length >= 0) {
-    spacedOutput = spacedOutput.replace(/(\d)(?=(\d{3})+(?!\d|\.)|\.\d*$)/g, "$1 ");
-    console.log(spacedOutput);
-  };
-  return spacedOutput;
-};
-
 function displayMaxNumberLength() {
-  let numDisplay = result.textContent;
+  let numDisplay = result.textContent.replace(/\s+/g, "");
   let numParts = numDisplay.split(".");                                                       // Separate a number into numbers 'before' and 'after' a decimal (if there are any)
  
   if (numParts[0].length > 9) {                                                               // If integer number is greater than 9, display only 9 digits
-    numParts[0] = numParts[0].substring(0, 9);  
+    numParts[0] = numParts[0].substring(0, 9); 
   };
 
   if (numParts.length > 1) {                                                                  // Check if there decimal numbers
@@ -129,13 +125,26 @@ function displayMaxNumberLength() {
   } else {
     numDisplay = numParts[0];
   };
+  return numDisplay;
+};
 
-  return parseFloat(numDisplay);
+// Space out numbers for every 3 digits for better readability
+function formatNumberWithSpaces() {
+  let spacedOutput = result.textContent;
+
+  spacedOutput = spacedOutput.replace(/(\d)(?=(\d{3})+(?!\d|e[\+\-]))/g, "$1 ");              // Separates every 3 digits, excluding scientific notation
+
+  if (spacedOutput.startsWith("0.") || spacedOutput.startsWith("-0.")) {                      // Remove any whitespace from numbers starting with 0. or -0.
+    spacedOutput = spacedOutput.replace(/\s/g, "");
+  };
+
+  result.textContent = spacedOutput;
+  return spacedOutput;
 };
 
 // Format numbers with decimal places, and convert to scientific notation if the number is too large or too small
 function formatNumbers() {
-  let scientificResult = result.textContent;
+  let scientificResult = result.textContent.replace(/\s/g, "");
  
   if (previousOperator !== null && operator !== null) {
     // Case for integers without decimals and scientific notations
@@ -143,13 +152,13 @@ function formatNumbers() {
       let intNum = parseInt(scientificResult);
       if (intNum >= 0) {
         if (Math.abs(intNum) >= 1e+9) {                                                                           // 1e+9 short for 1,000,000,000
-          scientificResult = Number.parseFloat(intNum).toExponential(5).replace(/(\.?0+)?e/, 'e');                // Removes any trailing 0s for scientific notation
+          scientificResult = Number.parseFloat(intNum).toExponential(5).replace(/(\.?0+)?e/, "e");                // Removes any trailing 0s for scientific notation
         } else {
           scientificResult = intNum.toFixed(1).replace(/\.?0+$/, '');                                             // Removes any trailing 0s and rounds it to 1 decimal place
         };
       } else {                                                                                                    // Case for negative integers
         if (Math.abs(intNum) >= 1e+9) {
-          scientificResult = Number.parseFloat(intNum).toExponential(5).replace(/(\.?0+)?e/, 'e');
+          scientificResult = Number.parseFloat(intNum).toExponential(5).replace(/(\.?0+)?e/, "e");
         } else {
           scientificResult = intNum.toFixed(1).replace(/\.?0+$/, '');
         };
@@ -158,26 +167,28 @@ function formatNumbers() {
     } else if (scientificResult.includes("e")) {
       let sciExponent = parseInt(scientificResult.split("e")[1]);
       if (sciExponent > 20 || sciExponent < 0) {                                                                  // If exponent of scientific notation is greater than 20 or lower than 0
-        scientificResult = Number.parseFloat(scientificResult).toExponential(5).replace(/(\.?0+)?e/, 'e');        // then keep rounding to 5 decimal places
+        scientificResult = Number.parseFloat(scientificResult).toExponential(5).replace(/(\.?0+)?e/, "e");        // then keep rounding to 5 decimal places
       };
     // Case for decimal numbers (excluding scientific notations)
     } else if (scientificResult.includes(".") && !scientificResult.includes("e")) {
       const decimalNum = parseFloat(scientificResult);
       const absoluteNum = Math.abs(decimalNum);
       if (absoluteNum >= 1e+9) {
-        scientificResult = decimalNum.toExponential(5).replace(/(\.?0+)?e/, 'e');
+        scientificResult = decimalNum.toExponential(5).replace(/(\.?0+)?e/, "e");
       } else if (absoluteNum >= 1) {                                                                              // If greater or equal to 1, round to 1 decimal
-        scientificResult = decimalNum.toFixed(1).replace(/\.?0+$/, '');
+        scientificResult = decimalNum.toFixed(1).replace(/\.?0+$/, "");
       } else if (absoluteNum >= 0.00001 && absoluteNum < 1) {                                                     // If between 0.00001 and 0.99999, round to 5 decimals
-        scientificResult = decimalNum.toFixed(5).replace(/\.?0+$/, '');                       
+        scientificResult = decimalNum.toFixed(5).replace(/\.?0+$/, "");                       
       } else {                                                                                                    // if less than 0.00001, convert to scientific notation
-        scientificResult = decimalNum.toExponential(5).replace(/(\.?0+)?e/, 'e');
+        scientificResult = decimalNum.toExponential(5).replace(/(\.?0+)?e/, "e");
       };
     };
   };
+
   scientificNotation = true;
   result.textContent = scientificResult;
   expression.textContent = ` ${scientificResult} ${operator}`;
+  formatNumberWithSpaces();
 
   return scientificResult;
 };
@@ -214,14 +225,16 @@ function calculateNumbers() {
       previousResult = firstNum;                                                              // Assign the value of firstNum as previousResult
     } else {                                                                                  // If previousResult has a value
       firstNum = operate(operator, firstNum, secondNum);                                      // Perform calculation of the previous firstNum and new secondNum value
-      result.textContent = firstNum; 
+      result.textContent = firstNum;
     };
     firstNum = operate(previousOperator || operator, previousResult, secondNum);              // Perform calculation using previousOperator and previousResult, and new secondNum
     previousResult = firstNum;                                                                // Update previousResult after operation
     expression.textContent = `${previousResult} ${operator} `;
     result.textContent = previousResult;
     formatNumbers();
+    previousResult = parseFloat(result.textContent.replace(/\s/g, ""));                       // Make sure it handles decimal numbers correctly, to avoid inaccurate calculations
   };
+  formatNumberWithSpaces();
 
   // Display "ERROR" when dividing by zero
   if ((previousOperator === "/" && operator !== null) && secondNum === 0) {
@@ -234,7 +247,7 @@ function calculateNumbers() {
   };
 };
 
-// Handle error after division by 0
+// Handle error after dividing by 0
 function errorHandler() {
   reset();
   expression.textContent = "";
@@ -251,6 +264,10 @@ function resetCalculator() {
   });
 };
 resetCalculator();
+
+
+
+
 
 function addNumbers() {
   add.addEventListener("click", () => {
@@ -278,17 +295,19 @@ function addNumbers() {
       scientificNotation = false;
       expression.textContent = `${firstNum} ${operator}`;
       if (!numberClicked && previousOperator === null) {                                      // Case if no number was clicked before operator at the start
-        expression.textContent = "";
+        expression.textContent = ""; 
         result.textContent = "0";
         return;
       };
     };
 
     if (operatorClicked && addClicked) {                                                      // If operator was clicked ("+"), and clicked again ("+") right after
+      expression.textContent = `${formatNumberWithSpaces()} ${operator}`;
       if (firstNum !== null || secondNum !== null) {                                          // If first and second numbers are not empty
         return;                                                                               // Return nothing, unless same operator is clicked and number entered, return that operation result
       };
     } else if (subtractClicked || multiplyClicked || divideClicked) {                         // If 'subtract' was clicked or 'multiply' or 'divide', then 'add' was clicked, then return addition
+      expression.textContent = `${formatNumberWithSpaces()} ${operator}`;
       previousOperator = "+";
       if (firstNum !== null || secondNum !== null) {
         if (!previousResult) {
@@ -305,6 +324,7 @@ function addNumbers() {
     addClicked = true;
     
     calculateNumbers();
+    expression.textContent = `${formatNumberWithSpaces()} ${operator}`;
     previousOperator = "+";                                                                   // previousOperator behaves as current operator
   });
 };
@@ -342,17 +362,19 @@ function subtractNumbers() {
     };
    
     if (operatorClicked && subtractClicked) {
+      expression.textContent = `${formatNumberWithSpaces()} ${operator}`;
       if (firstNum !== null || secondNum !== null) {
         return;
       };
     } else if (addClicked || multiplyClicked || divideClicked) {
-        previousOperator = "-";
-        if (firstNum !== null || secondNum !== null) {
-          if (!previousResult) {
-            expression.textContent = `${firstNum} ${operator}`;
-          };
-          return;
+      expression.textContent = `${formatNumberWithSpaces()} ${operator}`;
+      previousOperator = "-";
+      if (firstNum !== null || secondNum !== null) {
+        if (!previousResult) {
+          expression.textContent = `${firstNum} ${operator}`;
         };
+        return;
+      };
     };
  
     operatorClicked = true;
@@ -362,6 +384,7 @@ function subtractNumbers() {
     subtractClicked = true;
     
     calculateNumbers();
+    expression.textContent = `${formatNumberWithSpaces()} ${operator}`;
     previousOperator = "-";
   });
 };
@@ -399,10 +422,12 @@ function multiplyNumbers() {
     };
     
     if (operatorClicked && multiplyClicked) {
+      expression.textContent = `${formatNumberWithSpaces()} ${operator}`;
       if (firstNum !== null || secondNum !== null) {
         return;
       };
     } else if (addClicked || subtractClicked || divideClicked) {
+      expression.textContent = `${formatNumberWithSpaces()} ${operator}`;
       previousOperator = "x";
       if (firstNum !== null || secondNum !== null) {
         if (!previousResult) {
@@ -419,6 +444,7 @@ function multiplyNumbers() {
     multiplyClicked = true;
 
     calculateNumbers();
+    expression.textContent = `${formatNumberWithSpaces()} ${operator}`;
     previousOperator = "x";
   });
 };
@@ -456,10 +482,12 @@ function divideNumbers() {
     };
 
     if (operatorClicked && divideClicked) {
+      expression.textContent = `${formatNumberWithSpaces()} ${operator}`;
       if (firstNum !== null || secondNum !== null) {
         return;
       };
     } else if (addClicked || subtractClicked || multiplyClicked) {
+      expression.textContent = `${formatNumberWithSpaces()} ${operator}`;
       previousOperator = "/";
       if (firstNum !== null || secondNum !== null) {
         if (!previousResult) {
@@ -476,6 +504,7 @@ function divideNumbers() {
     divideClicked = true;
 
     calculateNumbers();
+    expression.textContent = `${formatNumberWithSpaces()} ${operator}`;
     previousOperator = "/";
   });
 };
@@ -484,6 +513,10 @@ addNumbers();
 subtractNumbers();
 multiplyNumbers();
 divideNumbers();
+
+
+
+
 
 //const calculate = function() {
   //equal.addEventListener("click", () => {
