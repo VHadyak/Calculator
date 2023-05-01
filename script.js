@@ -33,7 +33,7 @@ let operatorClicked = false;
 let resetClicked = false;
 
 // Boolean function status
-let scientificNotation = false;
+let numberFormat = false;
 let displayError = false;
 
 // Include 10 number buttons
@@ -57,7 +57,7 @@ function reset() {
   subtractClicked = false;
   multiplyClicked = false;
   divideClicked = false;
-  scientificNotation = false;
+  numberFormat = false;
   displayError = false;
   resetClicked = true;
 };
@@ -68,10 +68,11 @@ function displayNumbers() {
     const number = button.textContent;
     button.addEventListener("click", () => {
 
-      if (displayError) {
+      if (displayError) {                                                                     // Start fresh if new number was clicked after an error
         resetCalculator();
         result.textContent = "";
-        displayError = false;
+        expression.textContent = "";
+        displayError = false;                                                                 
       };
 
       if (result.textContent === "0" && numberClicked) {
@@ -125,13 +126,13 @@ function displayMaxNumberLength() {
   } else {
     numDisplay = numParts[0];
   };
+
   return numDisplay;
 };
 
 // Space out numbers for every 3 digits for better readability
 function formatNumberWithSpaces() {
   let spacedOutput = result.textContent;
-
   spacedOutput = spacedOutput.replace(/(\d)(?=(\d{3})+(?!\d|e[\+\-]))/g, "$1 ");              // Separates every 3 digits, excluding scientific notation
 
   if (spacedOutput.startsWith("0.") || spacedOutput.startsWith("-0.")) {                      // Remove any whitespace from numbers starting with 0. or -0.
@@ -185,7 +186,7 @@ function formatNumbers() {
     };
   };
 
-  scientificNotation = true;
+  numberFormat = true;
   result.textContent = scientificResult;
   expression.textContent = ` ${scientificResult} ${operator}`;
   formatNumberWithSpaces();
@@ -236,13 +237,8 @@ function calculateNumbers() {
   };
   formatNumberWithSpaces();
 
-  // Display "ERROR" when dividing by zero
+  // Detect if there was division by 0
   if ((previousOperator === "/" && operator !== null) && secondNum === 0) {
-    result.textContent = "ERROR";
-    expression.textContent = "";
-    firstNum = null;
-    secondNum = null;
-    previousResult = null;
     displayError = true;
   };
 };
@@ -255,7 +251,6 @@ function errorHandler() {
   displayError = true;
 };
 
-
 // Reset everything after reset button is clicked
 function resetCalculator() {
   clearAll.addEventListener("click", () => {
@@ -265,247 +260,144 @@ function resetCalculator() {
 };
 resetCalculator();
 
+// Return an object of operators 
+const getOperatorFlags = function() {
+  return {
+    "+": {
+      clicked: addClicked,                                                                    // Checks currently clicked flag
+      check: subtractClicked || multiplyClicked || divideClicked,                             // Checks previously clicked flags
+    },
+    "-": {
+      clicked: subtractClicked,
+      check: addClicked || multiplyClicked || divideClicked,
+    },
+    "x": {
+      clicked: multiplyClicked,
+      check: addClicked || subtractClicked || divideClicked,
+    },
+    "/": {
+      clicked: divideClicked,
+      check: addClicked || subtractClicked || multiplyClicked,
+    },
+  };
+};
 
+// Update expression display in appropriate format if there any decimal numbers or scientific notation
+function updateExpressionFormat(operator) {
+  if (numberFormat) {                                                                         
+    expression.textContent = `${formatNumbers()} ${operator}`;
+  } else {
+    numberFormat = false;
+    expression.textContent = `${firstNum} ${operator}`;
+    if (!numberClicked && previousOperator === null) {                                        // If no number was clicked and previous operator not yet defined, then return nothing
+      expression.textContent = "";
+      result.textContent = "0";
+      console.log("test");
+      return;
+    };
+  };
+};
 
+// Detect if reset button was clicked
+function resetIsClicked() {
+  if (resetClicked) {                                                                         // If 'AC' clicked and no new number was entered, keep it in 'default' state                                
+    reset();
+    result.textContent = "0";  
+    return true;
+  };
+  return false;
+};
 
+// Display an error if number divided by 0
+function displayDivisionError() {
+  if (displayError) {                                                                         // If 'ERROR' was displayed and operator "/" clicked, reset the calculator 
+    errorHandler();
+    result.textContent = "ERROR";
+    expression.textContent = "";
+    return true;
+  };
+  return false;
+};
 
+// Handler for when operators are clicked in the calculator 
+function handleOperators(mathOperator) {
+
+  operator = mathOperator;
+
+  const operatorFlags = getOperatorFlags();
+
+  // If 'AC' clicked, reset calculator
+  if (resetIsClicked()) {                                                                     
+    return;
+  };
+
+  updateExpressionFormat(operator);
+
+  // Handle operator clicks
+  if (operatorFlags[operator].clicked && previousOperator !== operator) {                     // Set previous operator to the operator that has been clicked (if they not the same operators)
+   previousOperator = operator;
+  };
+
+  if (operatorFlags[operator].clicked && operatorClicked) {                                   // If same operator was clicked twice or more times
+    expression.textContent = `${formatNumberWithSpaces()} ${operator}`;
+    if (firstNum !== null || secondNum !== null) {
+      return;
+    };
+  } else if (operatorFlags[operator].check) {                                                 // If operator was clicked before, and is not the same as the currently clicked operator
+    expression.textContent = `${formatNumberWithSpaces()} ${operator}`;
+    previousOperator = operator;
+    if (firstNum !== null || secondNum !== null) {
+      if (!previousResult) {
+        expression.textContent = `${formatNumberWithSpaces()} ${operator}`;
+      };
+      return;
+    };
+  };
+
+  operatorClicked = true;
+
+  // Boolean clicked value is based on operator selected, and sets other remaining booleans to false
+  addClicked = operator === "+";                                                   
+  subtractClicked = operator === "-";
+  multiplyClicked = operator === "x";
+  divideClicked = operator === "/";
+  
+  calculateNumbers();
+
+  // Display "ERROR" when divided by '0'
+  if (displayDivisionError()) {                                                               
+    return;
+  };
+
+  expression.textContent = `${formatNumberWithSpaces()} ${operator}`;
+  previousOperator = operator;                                                       
+};
+
+// Handle addition
 function addNumbers() {
   add.addEventListener("click", () => {
-
-    if (resetClicked) {                                                                       // If 'AC' clicked, stay in reset mode, unless a new number is entered
-      reset();
-      result.textContent = "0";
-      return;
-    };
-
-    if (displayError) {
-      errorHandler();
-      return;
-    };
-
-    if (addClicked && previousOperator !== "+") {                                             // If 'add' clicked, then 'other operator' was clicked, and then 'add' again, then perform addition 
-      previousOperator = "+";
-    };
-
-    operator = "+";
-
-    if (scientificNotation) {                                                           
-      expression.textContent = `${formatNumbers()} ${operator}`;
-    } else {
-      scientificNotation = false;
-      expression.textContent = `${firstNum} ${operator}`;
-      if (!numberClicked && previousOperator === null) {                                      // Case if no number was clicked before operator at the start
-        expression.textContent = ""; 
-        result.textContent = "0";
-        return;
-      };
-    };
-
-    if (operatorClicked && addClicked) {                                                      // If operator was clicked ("+"), and clicked again ("+") right after
-      expression.textContent = `${formatNumberWithSpaces()} ${operator}`;
-      if (firstNum !== null || secondNum !== null) {                                          // If first and second numbers are not empty
-        return;                                                                               // Return nothing, unless same operator is clicked and number entered, return that operation result
-      };
-    } else if (subtractClicked || multiplyClicked || divideClicked) {                         // If 'subtract' was clicked or 'multiply' or 'divide', then 'add' was clicked, then return addition
-      expression.textContent = `${formatNumberWithSpaces()} ${operator}`;
-      previousOperator = "+";
-      if (firstNum !== null || secondNum !== null) {
-        if (!previousResult) {
-          expression.textContent = `${firstNum} ${operator}`;
-        };
-        return;
-      };
-    };
-
-    operatorClicked = true;
-    multiplyClicked = false;
-    divideClicked = false;
-    subtractClicked = false;
-    addClicked = true;
-    
-    calculateNumbers();
-    expression.textContent = `${formatNumberWithSpaces()} ${operator}`;
-    previousOperator = "+";                                                                   // previousOperator behaves as current operator
+    handleOperators("+");                                                              
   });
 };
 
+// Handle subtraction
 function subtractNumbers() {
   subtract.addEventListener("click", () => {
-
-    if (resetClicked) {                                                                     
-      reset();
-      result.textContent = "0";
-      return;
-    };
-    
-    if (displayError) {
-      errorHandler();
-      return;
-    };
-
-    if (subtractClicked && previousOperator !== "-") {                                       
-      previousOperator = "-";
-    };
-
-    operator = "-";
-   
-    if (scientificNotation) {                                                           
-      expression.textContent = `${formatNumbers()} ${operator}`;
-    } else {
-      scientificNotation = false;
-      expression.textContent = `${firstNum} ${operator}`;
-      if (!numberClicked && previousOperator === null) {
-        expression.textContent = "";
-        result.textContent = "0";
-        return;
-      };
-    };
-   
-    if (operatorClicked && subtractClicked) {
-      expression.textContent = `${formatNumberWithSpaces()} ${operator}`;
-      if (firstNum !== null || secondNum !== null) {
-        return;
-      };
-    } else if (addClicked || multiplyClicked || divideClicked) {
-      expression.textContent = `${formatNumberWithSpaces()} ${operator}`;
-      previousOperator = "-";
-      if (firstNum !== null || secondNum !== null) {
-        if (!previousResult) {
-          expression.textContent = `${firstNum} ${operator}`;
-        };
-        return;
-      };
-    };
- 
-    operatorClicked = true;
-    multiplyClicked = false;
-    divideClicked = false;
-    addClicked = false;
-    subtractClicked = true;
-    
-    calculateNumbers();
-    expression.textContent = `${formatNumberWithSpaces()} ${operator}`;
-    previousOperator = "-";
+    handleOperators("-");
   });
 };
 
+// Handle multiplication
 function multiplyNumbers() {
   multiply.addEventListener("click", () => {
-
-    if (resetClicked) {                                                                     
-      reset();
-      result.textContent = "0";
-      return;
-    };
-
-    if (displayError) {
-      errorHandler();
-      return;
-    };
-
-    if (multiplyClicked && previousOperator !== "x") {                                      
-      previousOperator = "x";
-    };
-
-    operator = "x";
-
-    if (scientificNotation) {                                                           
-      expression.textContent = `${formatNumbers()} ${operator}`;
-    } else {
-      scientificNotation = false;
-      expression.textContent = `${firstNum} ${operator}`;
-      if (!numberClicked && previousOperator === null) {
-        expression.textContent = "";
-        result.textContent = "0";
-        return;
-      };
-    };
-    
-    if (operatorClicked && multiplyClicked) {
-      expression.textContent = `${formatNumberWithSpaces()} ${operator}`;
-      if (firstNum !== null || secondNum !== null) {
-        return;
-      };
-    } else if (addClicked || subtractClicked || divideClicked) {
-      expression.textContent = `${formatNumberWithSpaces()} ${operator}`;
-      previousOperator = "x";
-      if (firstNum !== null || secondNum !== null) {
-        if (!previousResult) {
-          expression.textContent = `${firstNum} ${operator}`;
-        };
-        return;
-      };
-    };
-
-    operatorClicked = true;
-    addClicked = false;
-    divideClicked = false;
-    subtractClicked = false;
-    multiplyClicked = true;
-
-    calculateNumbers();
-    expression.textContent = `${formatNumberWithSpaces()} ${operator}`;
-    previousOperator = "x";
+    handleOperators("x");
   });
 };
 
+// Handle division
 function divideNumbers() {
   divide.addEventListener("click", () => {
-
-    if (resetClicked) {                                                                     
-      reset();
-      result.textContent = "0";
-      return;
-    };
-
-    if (displayError) {
-      errorHandler();
-      return;
-    };
-
-    if (divideClicked && previousOperator !== "/") {                                      
-      previousOperator = "/";
-    };
-
-    operator = "/";
-
-     if (scientificNotation) {                                                           
-      expression.textContent = `${formatNumbers()} ${operator}`;
-    } else {
-      scientificNotation = false;
-      expression.textContent = `${firstNum} ${operator}`;
-      if (!numberClicked && previousOperator === null) {
-        expression.textContent = "";
-        result.textContent = "0";
-        return;
-      };
-    };
-
-    if (operatorClicked && divideClicked) {
-      expression.textContent = `${formatNumberWithSpaces()} ${operator}`;
-      if (firstNum !== null || secondNum !== null) {
-        return;
-      };
-    } else if (addClicked || subtractClicked || multiplyClicked) {
-      expression.textContent = `${formatNumberWithSpaces()} ${operator}`;
-      previousOperator = "/";
-      if (firstNum !== null || secondNum !== null) {
-        if (!previousResult) {
-          expression.textContent = `${firstNum} ${operator}`;
-        };
-        return;
-      };
-    };
-  
-    operatorClicked = true;
-    addClicked = false;
-    subtractClicked = false;
-    multiplyClicked = false;
-    divideClicked = true;
-
-    calculateNumbers();
-    expression.textContent = `${formatNumberWithSpaces()} ${operator}`;
-    previousOperator = "/";
+    handleOperators("/");
   });
 };
 
@@ -513,7 +405,6 @@ addNumbers();
 subtractNumbers();
 multiplyNumbers();
 divideNumbers();
-
 
 
 
@@ -535,3 +426,6 @@ divideNumbers();
   //});
 //};
 //calculate();
+
+
+// 10.4 / 10 = 1 instead of 1.04 ** NOTE **
