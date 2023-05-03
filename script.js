@@ -143,53 +143,71 @@ function formatNumberWithSpaces() {
   return spacedOutput;
 };
 
-// Format numbers with decimal places, and convert to scientific notation if the number is too large or too small
-function formatNumbers() {
-  let scientificResult = result.textContent.replace(/\s/g, "");
- 
-  if (previousOperator !== null && operator !== null) {
-    // Case for integers without decimals and scientific notations
-    if (!scientificResult.includes(".") && !scientificResult.includes("e")) {
-      let intNum = parseInt(scientificResult);
-      if (intNum >= 0) {
-        if (Math.abs(intNum) >= 1e+9) {                                                                           // 1e+9 short for 1,000,000,000
-          scientificResult = Number.parseFloat(intNum).toExponential(5).replace(/(\.?0+)?e/, "e");                // Removes any trailing 0s for scientific notation
-        } else {
-          scientificResult = intNum.toFixed(1).replace(/\.?0+$/, '');                                             // Removes any trailing 0s and rounds it to 1 decimal place
-        };
-      } else {                                                                                                    // Case for negative integers
-        if (Math.abs(intNum) >= 1e+9) {
-          scientificResult = Number.parseFloat(intNum).toExponential(5).replace(/(\.?0+)?e/, "e");
-        } else {
-          scientificResult = intNum.toFixed(1).replace(/\.?0+$/, '');
-        };
+// Format integers, excluding decimal numbers and scientific notation
+function formatIntegers(scientificResult) {
+  if (!scientificResult.includes(".") && !scientificResult.includes("e")) {
+    let intNum = parseInt(scientificResult);
+    if (intNum >= 0) {
+      if (Math.abs(intNum) >= 1e+9) {                                                                           // 1e+9 short for 1,000,000,000
+        scientificResult = Number.parseFloat(intNum).toExponential(5).replace(/(\.?0+)?e/, "e");                // Removes any trailing 0s for scientific notation
+      } else {
+        scientificResult = intNum.toFixed(1).replace(/\.?0+$/, '');                                             // Removes any trailing 0s and rounds it to 1 decimal place
       };
-    // Case for scientific notations
-    } else if (scientificResult.includes("e")) {
-      let sciExponent = parseInt(scientificResult.split("e")[1]);
-      if (sciExponent > 20 || sciExponent < 0) {                                                                  // If exponent of scientific notation is greater than 20 or lower than 0
-        scientificResult = Number.parseFloat(scientificResult).toExponential(5).replace(/(\.?0+)?e/, "e");        // then keep rounding to 5 decimal places
-      };
-    // Case for decimal numbers (excluding scientific notations)
-    } else if (scientificResult.includes(".") && !scientificResult.includes("e")) {
-      const decimalNum = parseFloat(scientificResult);
-      const absoluteNum = Math.abs(decimalNum);
-      if (absoluteNum >= 1e+9) {
-        scientificResult = decimalNum.toExponential(5).replace(/(\.?0+)?e/, "e");
-      } else if (absoluteNum >= 1) {                                                                              // If greater or equal to 1, round to 1 decimal
-        scientificResult = decimalNum.toFixed(1).replace(/\.?0+$/, "");
-      } else if (absoluteNum >= 0.00001 && absoluteNum < 1) {                                                     // If between 0.00001 and 0.99999, round to 5 decimals
-        scientificResult = decimalNum.toFixed(5).replace(/\.?0+$/, "");                       
-      } else {                                                                                                    // if less than 0.00001, convert to scientific notation
-        scientificResult = decimalNum.toExponential(5).replace(/(\.?0+)?e/, "e");
+    } else {                                                                                                    // Case for negative integers
+      if (Math.abs(intNum) >= 1e+9) {
+        scientificResult = Number.parseFloat(intNum).toExponential(5).replace(/(\.?0+)?e/, "e");
+      } else {
+        scientificResult = intNum.toFixed(1).replace(/\.?0+$/, '');
       };
     };
+  };
+  return scientificResult;
+};
+
+// Format scientific notation only
+function formatScientificNotation(scientificResult) {
+  if (scientificResult.includes("e")) {
+    let sciExponent = parseInt(scientificResult.split("e")[1]);
+    if (sciExponent > 20 || sciExponent < 0) {                                                                  // If exponent of scientific notation is greater than 20 or lower than 0
+      scientificResult = Number.parseFloat(scientificResult).toExponential(5).replace(/(\.?0+)?e/, "e");        // then keep rounding to 5 decimal places
+    };
+  };
+  return scientificResult;
+};
+
+// Format decimal numbers, excluding scientific notation
+function formatDecimals(scientificResult) {
+  if (scientificResult.includes(".") && !scientificResult.includes("e")) {
+    const decimalNum = parseFloat(scientificResult);
+    const absoluteNum = Math.abs(decimalNum);                                                                   // Make decimal numbers as absolute numbers     
+
+    if (absoluteNum >= 1e+9) {
+      scientificResult = decimalNum.toExponential(5).replace(/(\.?0+)?e/, "e");
+    } else if (absoluteNum >= 1) {                                                                              // If greater or equal to 1, round to 1 decimal
+      scientificResult = decimalNum.toFixed(1).replace(/\.?0+$/, "");
+    } else if (absoluteNum >= 0.00001 && absoluteNum < 1) {                                                     // If between 0.00001 and 0.99999 (+/-), round to 5 decimals
+      scientificResult = decimalNum.toFixed(5).replace(/\.?0+$/, "");                       
+    } else {                                                                                                    // if less than 0.00001, convert to scientific notation
+      scientificResult = decimalNum.toExponential(5).replace(/(\.?0+)?e/, "e");
+    };
+  };
+  return scientificResult;
+};
+
+// Format numbers
+function formatNumbers() {
+  let scientificResult = result.textContent.replace(/\s/g, "");                               // Make sure there isn't any unpredictable white space before formatting
+ 
+  if (previousOperator !== null && operator !== null) {
+    scientificResult = formatIntegers(scientificResult);
+    scientificResult = formatScientificNotation(scientificResult);
+    scientificResult = formatDecimals(scientificResult);
   };
 
   numberFormat = true;
   result.textContent = scientificResult;
   expression.textContent = ` ${scientificResult} ${operator}`;
-  formatNumberWithSpaces();
+  formatNumberWithSpaces();                                                                   // Space out the formatted numbers where necessary
 
   return scientificResult;
 };
@@ -245,7 +263,7 @@ function calculateNumbers() {
 
 // Handle error after dividing by 0
 function errorHandler() {
-  reset();
+  reset();                                                                                    // Full reset
   expression.textContent = "";
   result.textContent = "0";
   displayError = true;
