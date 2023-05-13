@@ -13,6 +13,7 @@ const equal = document.querySelector("#equals");
 
 // Calculator extra feature variables
 const clearAll = document.querySelector("#ac");
+const percentage = document.querySelector("#percentage");
 
 // Values
 let numericValue = 0;
@@ -31,12 +32,13 @@ let equalClicked = false;
 let numberClicked = false;
 let operatorClicked = false;
 let resetClicked = false;
+let percentageClicked = false;
 
 // Boolean function status
 let numberFormat = false;
 let displayError = false;
 
-// Include 10 number buttons
+// Include number buttons from 0 to 9
 const numButtons = [];
 
 for (let i = 0; i <= 9; i++) {
@@ -60,6 +62,7 @@ function reset() {
   numberFormat = false;
   displayError = false;
   resetClicked = true;
+  percentageClicked = false;
 };
 
 // Display numbers 
@@ -75,12 +78,10 @@ function displayNumbers() {
         displayError = false;                                                                 
       };
 
-      if (result.textContent === "0" && numberClicked) {
-        result.textContent = "";
-      } else if (result.textContent === "0" && !numberClicked) {
+      if (result.textContent === "0" && (numberClicked || !numberClicked)) {
         result.textContent = "";
       };
-
+  
       numberClicked = true;
        
       // Clear 'result' display every-time a new number is clicked after operator 
@@ -96,10 +97,17 @@ function displayNumbers() {
       } else if (divideClicked) {
         result.textContent = "";
         divideClicked = false;
-      } else if (resetClicked) {                                                              // After 'AC' is clicked and consecutive operator clicks, it will always be in 'reset' mode ...
+      } else if (resetClicked) {                                                              // After 'AC' is clicked and consecutive operator clicks, it will always be in 'reset'
         resetClicked = false;                                                                 // Unless there is new random number clicked, then it will disable the reset mode
+      } else if (percentageClicked || (percentageClicked && previousResult !== null)) {       // If '%' clicked and new number is clicked, reset the display, or previousResult is known and '%' is clicked, 
+        firstNum = null;                                                                      // ... reset only if new number is clicked after '%' and continue calculation if operator was clicked after '%'
+        secondNum = null;
+        previousResult = null;
+        result.textContent = "";
+        expression.textContent = "";
+        percentageClicked = false;
       };
-      
+
       result.textContent += number;
 
       numericValue = parseFloat(displayMaxNumberLength()); 
@@ -111,6 +119,7 @@ function displayNumbers() {
   });
 };
 displayNumbers();
+
 
 // Display a number of max to 9 digits (not including decimal numbers)
 function displayMaxNumberLength() {
@@ -198,7 +207,7 @@ function formatDecimals(scientificResult) {
 function formatNumbers() {
   let scientificResult = result.textContent.replace(/\s/g, "");                               // Make sure there isn't any unpredictable white space before formatting
  
-  if (previousOperator !== null && operator !== null) {
+  if ((previousOperator !== null && operator !== null) || previousOperator === null) {
     scientificResult = formatIntegers(scientificResult);
     scientificResult = formatScientificNotation(scientificResult);
     scientificResult = formatDecimals(scientificResult);
@@ -242,7 +251,7 @@ function calculateNumbers() {
     secondNum = numericValue;                                                                 // Assign numericValue to secondNum after operator was clicked
     if (previousResult === null) {                                                            // If previousResult does not exist
       previousResult = firstNum;                                                              // Assign the value of firstNum as previousResult
-    } else {                                                                                  // If previousResult has a value
+    } else {                                                                                  // If previousResult has a value  
       firstNum = operate(operator, firstNum, secondNum);                                      // Perform calculation of the previous firstNum and new secondNum value
       result.textContent = firstNum;
     };
@@ -269,6 +278,17 @@ function errorHandler() {
   displayError = true;
 };
 
+// Display an error if number divided by 0
+function displayDivisionError() {
+  if (displayError) {                                                                         // If 'ERROR' was displayed and operator "/" clicked, reset the calculator 
+    errorHandler();
+    result.textContent = "ERROR";
+    expression.textContent = "";
+    return true;
+  };
+  return false;
+};
+
 // Reset everything after reset button is clicked
 function resetCalculator() {
   clearAll.addEventListener("click", () => {
@@ -277,6 +297,16 @@ function resetCalculator() {
   });
 };
 resetCalculator();
+
+// Detect if reset button was clicked
+function resetIsClicked() {
+  if (resetClicked) {                                                                         // If 'AC' clicked and no new number was entered, keep it in 'default' state                                
+    reset();
+    result.textContent = "0";  
+    return true;
+  };
+  return false;
+};
 
 // Return an object of operators 
 const getOperatorFlags = function() {
@@ -310,31 +340,9 @@ function updateExpressionFormat(operator) {
     if (!numberClicked && previousOperator === null) {                                        // If no number was clicked and previous operator not yet defined, then return nothing
       expression.textContent = "";
       result.textContent = "0";
-      console.log("test");
       return;
     };
   };
-};
-
-// Detect if reset button was clicked
-function resetIsClicked() {
-  if (resetClicked) {                                                                         // If 'AC' clicked and no new number was entered, keep it in 'default' state                                
-    reset();
-    result.textContent = "0";  
-    return true;
-  };
-  return false;
-};
-
-// Display an error if number divided by 0
-function displayDivisionError() {
-  if (displayError) {                                                                         // If 'ERROR' was displayed and operator "/" clicked, reset the calculator 
-    errorHandler();
-    result.textContent = "ERROR";
-    expression.textContent = "";
-    return true;
-  };
-  return false;
 };
 
 // Handler for when operators are clicked in the calculator 
@@ -380,14 +388,21 @@ function handleOperators(mathOperator) {
   multiplyClicked = operator === "x";
   divideClicked = operator === "/";
   
-  calculateNumbers();
+  // Handle '%' functionality accurately when operator is clicked after '%'
+  if (percentageClicked) {
+    expression.textContent = `${formatNumberWithSpaces()} ${operator}`;
+    percentageClicked = false;
+    return;
+  } else {
+    calculateNumbers();
+    expression.textContent = `${formatNumberWithSpaces()} ${operator}`;
+  };
 
   // Display "ERROR" when divided by '0'
   if (displayDivisionError()) {                                                               
     return;
   };
 
-  expression.textContent = `${formatNumberWithSpaces()} ${operator}`;
   previousOperator = operator;                                                       
 };
 
@@ -419,6 +434,68 @@ function divideNumbers() {
   });
 };
 
+// Convert a number into percentage value when '%' is clicked
+function getPercentageValue() {
+  percentage.addEventListener("click", () => {
+    // If 'reset' was clicked before '%' return nothing
+    if (resetClicked) {
+      return;
+    };
+
+    if (firstNum === null) {
+      firstNum = numericValue / 100;                                                       
+      result.textContent = firstNum;
+      expression.textContent = `${formatNumberWithSpaces()}`;
+      percentageClicked = true;
+    } else {
+      secondNum = numericValue;                                                              
+      if (previousResult === null) {
+        if (!operatorClicked) {                                                               // Case for when '%' multiple times without any operators   
+          firstNum = firstNum / 100;
+          result.textContent = firstNum;
+          formatNumbers(); 
+          expression.textContent = `${result.textContent}`;
+        } else {                                                                              // Case when operator is registered, but the full result not known yet before clicking the '%'
+          firstNum = operate(operator, firstNum, secondNum) / 100;                            // Perform calculation between first and second numbers and / 100 when '%' clicked
+          result.textContent = firstNum;
+          expression.textContent = `${result.textContent}`;
+          previousResult = firstNum;
+          percentageClicked = true;
+        };
+      } else {
+        previousResult = previousResult / 100;              
+        firstNum = previousResult;
+        result.textContent = previousResult;
+        expression.textContent = `${result.textContent}`;
+        formatNumbers();
+        expression.textContent = `${formatNumberWithSpaces()}`;
+        percentageClicked = true;
+
+        // Reset every time new '%' is clicked if previousResult is known
+        addClicked = false;
+        subtractClicked = false;
+        multiplyClicked = false;
+        previousOperator = null;
+        divideClicked = false
+        numberClicked = false;
+        operatorClicked = false;
+        resetClicked = false;
+
+        return;  
+      };
+    };
+
+    // Case if number was clicked before '%' 
+    if (numberClicked) {
+      formatNumbers();
+      expression.textContent = `${formatNumberWithSpaces()}`;
+    } else {
+      expression.textContent = "";
+    };
+  });
+};
+
+getPercentageValue();
 addNumbers();
 subtractNumbers();
 multiplyNumbers();
