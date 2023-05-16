@@ -14,6 +14,7 @@ const equal = document.querySelector("#equals");
 // Calculator extra feature variables
 const clearAll = document.querySelector("#ac");
 const percentage = document.querySelector("#percentage");
+const backspace = document.querySelector("#delete");
 
 // Values
 let numericValue = 0;
@@ -33,6 +34,7 @@ let numberClicked = false;
 let operatorClicked = false;
 let resetClicked = false;
 let percentageClicked = false;
+let backspaceClicked = false;
 
 // Boolean function status
 let numberFormat = false;
@@ -63,6 +65,7 @@ function reset() {
   displayError = false;
   resetClicked = true;
   percentageClicked = false;
+  backspaceClicked = false;
 };
 
 // Display numbers 
@@ -264,6 +267,10 @@ function calculateNumbers() {
   };
   formatNumberWithSpaces();
 
+  if (backspaceClicked) {
+    backspaceClicked = false;
+  };
+
   // Detect if there was division by 0
   if ((previousOperator === "/" && operator !== null) && secondNum === 0) {
     displayError = true;
@@ -352,8 +359,23 @@ function handleOperators(mathOperator) {
 
   const operatorFlags = getOperatorFlags();
 
+  if (backspaceClicked && previousOperator === "/" && numericValue === 0) {
+    reset();
+    resetClicked = false;
+    result.textContent = "ERROR";
+    expression.textContent = "";
+    backspaceClicked = false;
+    displayError = true;
+    return;
+  };
+
   // If 'AC' clicked, reset calculator
   if (resetIsClicked()) {                                                                     
+    return;
+  };
+
+  // Return nothing when operator is clicked right after % without any entered number
+  if (percentageClicked && !numberClicked && previousResult === null) {
     return;
   };
 
@@ -381,25 +403,31 @@ function handleOperators(mathOperator) {
   };
 
   operatorClicked = true;
+  numberClicked = false;
+
+  // If operator clicked right after backspace, and no number was entered before that, return nothing
+  if (backspaceClicked && numericValue === 0) {
+    expression.textContent = "";
+    return;
+  };
 
   // Boolean clicked value is based on operator selected, and sets other remaining booleans to false
   addClicked = operator === "+";                                                   
   subtractClicked = operator === "-";
   multiplyClicked = operator === "x";
   divideClicked = operator === "/";
-  
+ 
   // Handle '%' functionality accurately when operator is clicked after '%'
   if (percentageClicked) {
     expression.textContent = `${formatNumberWithSpaces()} ${operator}`;
     percentageClicked = false;
-    return;
   } else {
     calculateNumbers();
     expression.textContent = `${formatNumberWithSpaces()} ${operator}`;
   };
 
   // Display "ERROR" when divided by '0'
-  if (displayDivisionError()) {                                                               
+  if (displayDivisionError()) {                                              
     return;
   };
 
@@ -437,8 +465,23 @@ function divideNumbers() {
 // Convert a number into percentage value when '%' is clicked
 function getPercentageValue() {
   percentage.addEventListener("click", () => {
+
+     // If division by 0 is in progress and '%' clicked, display "ERROR" and reset the calculator
+     if (numberClicked && (operator === "/" && numericValue === 0)) {
+      reset();
+      resetClicked = false;
+      result.textContent = "ERROR";
+      expression.textContent = "";
+      displayError = true;
+      return;
+    };
+
+    if (displayDivisionError()) {
+      return;
+    };
+
     // If 'reset' was clicked before '%' return nothing
-    if (resetClicked) {
+    if (resetIsClicked()) {
       return;
     };
 
@@ -460,7 +503,9 @@ function getPercentageValue() {
           result.textContent = firstNum;
           expression.textContent = `${result.textContent}`;
           previousResult = firstNum;
+          formatNumbers();
           percentageClicked = true;
+          return;
         };
       } else {
         previousResult = previousResult / 100;              
@@ -486,15 +531,64 @@ function getPercentageValue() {
     };
 
     // Case if number was clicked before '%' 
-    if (numberClicked) {
+    if (numberClicked && !displayError) {
       formatNumbers();
       expression.textContent = `${formatNumberWithSpaces()}`;
-    } else {
+    } else if (numberClicked && displayError) {
+      expression.textContent = "";
+    } else if (!numberClicked) {
       expression.textContent = "";
     };
   });
 };
 
+// 'Backspace' function that removes last digit every time its clicked
+function deleteDigit() {
+  backspace.addEventListener("click", () => {
+
+    if (displayDivisionError()) {
+      return;
+    };
+
+    if (resetIsClicked()) {
+      return;
+    };
+
+    let digits = numericValue.toString(10).split("");                                         // Turn current value into a string, then array
+    digits.pop();                                                                             // Remove the last digit every time backspace button is clicked
+
+    if (previousResult !== null && !numberClicked) {                                          // If prevResult is known, but no new number detected before hitting backspace, then keep original value
+      numberClicked = false;
+      return;
+    } else if (previousResult !== null && numberClicked) {                                    // If number was clicked before backspace, perform deletion
+      if (digits.length === 0) {
+        numericValue = digits.join("");
+        numericValue = 0;                                                                     // Set value to 0 if max digits have been deleted
+      } else {
+        numericValue = digits.join("");
+      };
+    } else if (previousResult === null && numberClicked) {
+      if (digits.length === 0) {
+        numericValue = digits.join("");
+        numericValue = 0;                                                                     // Set value to 0 if max digits have been deleted
+      } else {
+        numericValue = digits.join("");
+      };
+    };
+
+    if (percentageClicked) {
+      return;
+    };
+
+    numberClicked = true;
+    result.textContent = numericValue;
+    backspaceClicked = true;
+    
+    formatNumberWithSpaces();
+  });
+};
+
+deleteDigit();
 getPercentageValue();
 addNumbers();
 subtractNumbers();
