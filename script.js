@@ -358,6 +358,10 @@ function handleOperators(mathOperator) {
   operator = mathOperator;
 
   const operatorFlags = getOperatorFlags();
+  
+  if (!numberClicked && !percentageClicked && !resetClicked && !backspaceClicked && previousOperator === null) {
+    return;
+  };
 
   if (backspaceClicked && previousOperator === "/" && numericValue === 0) {
     reset();
