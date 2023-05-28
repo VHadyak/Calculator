@@ -19,12 +19,12 @@ const backspace = document.querySelector("#delete");
 // Values
 let numericValue = 0;
 let operator = "";
-let firstNum = null;
-let secondNum = null;
+let firstNum = null;                                                                          // First num entered
+let secondNum = null;                                                                         // Second num entered
 let previousOperator = null;
-let previousResult = null;
+let previousResult = null;                                                                    // Result of first and second numbers
 
-// Boolean buttons
+// Status buttons
 let addClicked = false;
 let subtractClicked = false;
 let multiplyClicked = false;
@@ -66,6 +66,7 @@ function reset() {
   resetClicked = true;
   percentageClicked = false;
   backspaceClicked = false;
+  equalClicked = false;
 };
 
 // Display numbers 
@@ -78,15 +79,20 @@ function displayNumbers() {
         resetCalculator();
         result.textContent = "";
         expression.textContent = "";
-        displayError = false;                                                                 
+        displayError = false;                                                                
       };
 
       if (result.textContent === "0" && (numberClicked || !numberClicked)) {
         result.textContent = "";
       };
-  
+
+      if (percentageClicked) {
+        reset();
+        resetClicked = false;
+      };
+
       numberClicked = true;
-       
+
       // Clear 'result' display every-time a new number is clicked after operator 
       if (addClicked) {                                     
         result.textContent = "";
@@ -109,6 +115,9 @@ function displayNumbers() {
         result.textContent = "";
         expression.textContent = "";
         percentageClicked = false;
+        equalClicked = false;
+      } else if (equalClicked) {
+        return;
       };
 
       result.textContent += number;
@@ -152,6 +161,7 @@ function formatNumberWithSpaces() {
   };
 
   result.textContent = spacedOutput;
+
   return spacedOutput;
 };
 
@@ -163,13 +173,13 @@ function formatIntegers(scientificResult) {
       if (Math.abs(intNum) >= 1e+9) {                                                                           // 1e+9 short for 1,000,000,000
         scientificResult = Number.parseFloat(intNum).toExponential(5).replace(/(\.?0+)?e/, "e");                // Removes any trailing 0s for scientific notation
       } else {
-        scientificResult = intNum.toFixed(1).replace(/\.?0+$/, '');                                             // Removes any trailing 0s and rounds it to 1 decimal place
+        scientificResult = intNum.toFixed(2).replace(/\.?0+$/, '');                                             // Removes any trailing 0s and rounds it to 2 decimal place
       };
     } else {                                                                                                    // Case for negative integers
       if (Math.abs(intNum) >= 1e+9) {
         scientificResult = Number.parseFloat(intNum).toExponential(5).replace(/(\.?0+)?e/, "e");
       } else {
-        scientificResult = intNum.toFixed(1).replace(/\.?0+$/, '');
+        scientificResult = intNum.toFixed(2).replace(/\.?0+$/, '');
       };
     };
   };
@@ -196,7 +206,7 @@ function formatDecimals(scientificResult) {
     if (absoluteNum >= 1e+9) {
       scientificResult = decimalNum.toExponential(5).replace(/(\.?0+)?e/, "e");
     } else if (absoluteNum >= 1) {                                                                              // If greater or equal to 1, round to 1 decimal
-      scientificResult = decimalNum.toFixed(1).replace(/\.?0+$/, "");
+      scientificResult = decimalNum.toFixed(2).replace(/\.?0+$/, "");
     } else if (absoluteNum >= 0.00001 && absoluteNum < 1) {                                                     // If between 0.00001 and 0.99999 (+/-), round to 5 decimals
       scientificResult = decimalNum.toFixed(5).replace(/\.?0+$/, "");                       
     } else {                                                                                                    // if less than 0.00001, convert to scientific notation
@@ -206,20 +216,52 @@ function formatDecimals(scientificResult) {
   return scientificResult;
 };
 
+// Format the 'expression' display with spaces
+function formatExpressionWithSpaces(numInput) {
+  let spacedOutput = numInput;
+  spacedOutput = spacedOutput.replace(/(\d)(?=(\d{3})+(?!\d|e[\+\-]))/g, "$1 ");              // Separates every 3 digits, excluding scientific notation
+
+  if (spacedOutput.startsWith("0.") || spacedOutput.startsWith("-0.")) {                      // Remove any whitespace from numbers starting with 0. or -0.
+    spacedOutput = spacedOutput.replace(/\s/g, "");
+  };
+  
+  return spacedOutput;
+}
+
+// Format the 'expression' display if there any decimal numbers, scientific notation, etc
+function formatExpression(num) {
+  let formattedNumber = num.toString();
+  formattedNumber = formatIntegers(formattedNumber);
+  formattedNumber = formatScientificNotation(formattedNumber);
+  formattedNumber = formatDecimals(formattedNumber);
+
+  return formattedNumber;
+};
+
 // Format numbers
 function formatNumbers() {
   let scientificResult = result.textContent.replace(/\s/g, "");                               // Make sure there isn't any unpredictable white space before formatting
- 
+
   if ((previousOperator !== null && operator !== null) || previousOperator === null) {
     scientificResult = formatIntegers(scientificResult);
     scientificResult = formatScientificNotation(scientificResult);
     scientificResult = formatDecimals(scientificResult);
   };
+         
+  if (equalClicked) {                                                                         // Rules if "=" sign has been clicked
+    result.textContent = scientificResult; 
+    const formattedInitialFirstNum = formatExpression(initialFirstNum);
+    const formattedInitialSecondNum = formatExpression(secondNum);
+    expression.textContent = `${formatExpressionWithSpaces(formattedInitialFirstNum)} ${operator} 
+                              ${formatExpressionWithSpaces(formattedInitialSecondNum)} = `;      
+  } else {
+    result.textContent = scientificResult;
+    expression.textContent = `${scientificResult} ${operator}`;
+  };
 
   numberFormat = true;
-  result.textContent = scientificResult;
-  expression.textContent = ` ${scientificResult} ${operator}`;
-  formatNumberWithSpaces();                                                                   // Space out the formatted numbers where necessary
+
+  formatNumberWithSpaces();
 
   return scientificResult;
 };
@@ -266,7 +308,7 @@ function calculateNumbers() {
     previousResult = parseFloat(result.textContent.replace(/\s/g, ""));                       // Make sure it handles decimal numbers correctly, to avoid inaccurate calculations
   };
   formatNumberWithSpaces();
-
+  
   if (backspaceClicked) {
     backspaceClicked = false;
   };
@@ -337,9 +379,9 @@ const getOperatorFlags = function() {
   };
 };
 
-// Update expression display in appropriate format if there any decimal numbers or scientific notation
+// Update expression display in appropriate format if there any decimal numbers or scientific notation ("=" excluded)
 function updateExpressionFormat(operator) {
-  if (numberFormat) {                                                                         
+  if (numberFormat && !equalClicked) {                                                                         
     expression.textContent = `${formatNumbers()} ${operator}`;
   } else {
     numberFormat = false;
@@ -359,6 +401,7 @@ function handleOperators(mathOperator) {
 
   const operatorFlags = getOperatorFlags();
   
+  // Make sure expression display doesn't display anything when no number was entered and operator clicked
   if (!numberClicked && !percentageClicked && !resetClicked && !backspaceClicked && previousOperator === null) {
     return;
   };
@@ -374,9 +417,7 @@ function handleOperators(mathOperator) {
   };
 
   // If 'AC' clicked, reset calculator
-  if (resetIsClicked()) {                                                                     
-    return;
-  };
+  if (resetIsClicked()) return;                                                                 
 
   // Return nothing when operator is clicked right after % without any entered number
   if (percentageClicked && !numberClicked && previousResult === null) {
@@ -420,22 +461,26 @@ function handleOperators(mathOperator) {
   subtractClicked = operator === "-";
   multiplyClicked = operator === "x";
   divideClicked = operator === "/";
- 
+
   // Handle '%' functionality accurately when operator is clicked after '%'
   if (percentageClicked) {
     expression.textContent = `${formatNumberWithSpaces()} ${operator}`;
     percentageClicked = false;
   } else {
-    calculateNumbers();
-    expression.textContent = `${formatNumberWithSpaces()} ${operator}`;
+    // Allows to perform calculations from where is was left of, after "=" was clicked
+    if (equalClicked) {                                                                       // If operator was clicked after the "="
+      expression.textContent = `${formatNumberWithSpaces()} ${operator}`;
+      equalClicked = false;
+    } else {
+      calculateNumbers();
+      expression.textContent = `${formatNumberWithSpaces()} ${operator}`;
+    };
   };
 
   // Display "ERROR" when divided by '0'
-  if (displayDivisionError()) {                                              
-    return;
-  };
+  if (displayDivisionError()) return;                                             
 
-  previousOperator = operator;                                                       
+  previousOperator = operator;            
 };
 
 // Handle addition
@@ -480,37 +525,39 @@ function getPercentageValue() {
       return;
     };
 
-    if (displayDivisionError()) {
-      return;
-    };
+    if (displayDivisionError()) return;
 
     // If 'reset' was clicked before '%' return nothing
-    if (resetIsClicked()) {
-      return;
-    };
+    if (resetIsClicked()) return;
 
     if (firstNum === null) {
       firstNum = numericValue / 100;                                                       
       result.textContent = firstNum;
       expression.textContent = `${formatNumberWithSpaces()}`;
       percentageClicked = true;
-    } else {
-      secondNum = numericValue;                                                              
+    } else {                        
+      secondNum = numericValue;               
       if (previousResult === null) {
         if (!operatorClicked) {                                                               // Case for when '%' multiple times without any operators   
           firstNum = firstNum / 100;
           result.textContent = firstNum;
           formatNumbers(); 
           expression.textContent = `${result.textContent}`;
-        } else {                                                                              // Case when operator is registered, but the full result not known yet before clicking the '%'
+        } else if (operatorClicked && numberClicked) {                                        // Case when operator is registered, but the full result not known yet before clicking the '%'
           firstNum = operate(operator, firstNum, secondNum) / 100;                            // Perform calculation between first and second numbers and / 100 when '%' clicked
           result.textContent = firstNum;
-          expression.textContent = `${result.textContent}`;
           previousResult = firstNum;
           formatNumbers();
-          percentageClicked = true;
+          expression.textContent = `${result.textContent}`;
+          percentageClicked = true; 
           return;
-        };
+        } else {
+          firstNum = firstNum / 100;
+          result.textContent = firstNum;
+          formatNumbers();
+          expression.textContent = `${formatNumberWithSpaces()}`;
+          return;
+        };     
       } else {
         previousResult = previousResult / 100;              
         firstNum = previousResult;
@@ -529,9 +576,14 @@ function getPercentageValue() {
         numberClicked = false;
         operatorClicked = false;
         resetClicked = false;
-
+        equalClicked = false;
         return;  
       };
+    };
+
+    if (equalClicked) {
+      percentageClicked = true;
+      equalClicked = false;
     };
 
     // Case if number was clicked before '%' 
@@ -550,13 +602,9 @@ function getPercentageValue() {
 function deleteDigit() {
   backspace.addEventListener("click", () => {
 
-    if (displayDivisionError()) {
-      return;
-    };
+    if (displayDivisionError()) return;
 
-    if (resetIsClicked()) {
-      return;
-    };
+    if (resetIsClicked()) return;
 
     let digits = numericValue.toString(10).split("");                                         // Turn current value into a string, then array
     digits.pop();                                                                             // Remove the last digit every time backspace button is clicked
@@ -564,33 +612,69 @@ function deleteDigit() {
     if (previousResult !== null && !numberClicked) {                                          // If prevResult is known, but no new number detected before hitting backspace, then keep original value
       numberClicked = false;
       return;
-    } else if (previousResult !== null && numberClicked) {                                    // If number was clicked before backspace, perform deletion
+    } else if (((previousResult !== null || previousResult === null) && numberClicked) || firstNum !== null) {                  
       if (digits.length === 0) {
         numericValue = digits.join("");
         numericValue = 0;                                                                     // Set value to 0 if max digits have been deleted
       } else {
         numericValue = digits.join("");
-      };
-    } else if (previousResult === null && numberClicked) {
-      if (digits.length === 0) {
-        numericValue = digits.join("");
-        numericValue = 0;                                                                     // Set value to 0 if max digits have been deleted
-      } else {
-        numericValue = digits.join("");
+        numericValue = parseFloat(numericValue);                                              // Parse it as a number, to prevent string concatenation after addition
       };
     };
 
-    if (percentageClicked) {
-      return;
-    };
+    if (firstNum !== null && !numberClicked) return;
 
+    if (percentageClicked) return;
+
+    if (equalClicked) return;
+    
     numberClicked = true;
     result.textContent = numericValue;
     backspaceClicked = true;
-    
+
     formatNumberWithSpaces();
   });
 };
+
+let initialFirstNum = null;
+
+// Calculate the numbers when '=' is clicked
+function equalsIsClicked() {
+  equal.addEventListener("click", () => {
+
+    initialFirstNum = firstNum;                                                               // Set firstNum to a new variable before it was modified by calculation
+                                                                                              // (Needed in order to make expression.textContent to work properly)
+    // If no operator was clicked before "=", return nothing
+    if (!operatorClicked) return;
+
+    if (backspaceClicked) {
+      backspaceClicked = false;
+    };
+
+    // If no number was clicked after operator
+    if (!numberClicked) return;
+
+    if (percentageClicked) {
+      if (firstNum !== null) {
+        return;
+      };
+    };
+  
+    // Perform calculations when "=" is clicked
+    if (firstNum !== null) {
+      equalClicked = true;
+      calculateNumbers();                                                                     // Calculate numbers when '=' is clicked
+      operator = null;
+      previousOperator = null;
+      operatorClicked = null;
+      secondNum = null;
+      previousResult = null;
+    };
+  
+    if (displayDivisionError()) return;                                              
+  });
+};
+
 
 deleteDigit();
 getPercentageValue();
@@ -598,27 +682,6 @@ addNumbers();
 subtractNumbers();
 multiplyNumbers();
 divideNumbers();
-
-
-
-
-//const calculate = function() {
-  //equal.addEventListener("click", () => {
-    //if (operator === null) return;
-
-    //secondNum = numericValue;
-    //firstNum = operate(previousOperator, firstNum, secondNum);
-    //expression.textContent = `${firstNum} `;
-    //result.textContent = firstNum;
-
-    //operator = null;
-    //previousOperator = null;
-    //operatorClicked = false;
-    //firstNum = null;
-    //secondNum = null;
-  //});
-//};
-//calculate();
-
+equalsIsClicked();
 
 // 10.4 / 10 = 1 instead of 1.04 ** NOTE **
