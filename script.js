@@ -15,6 +15,7 @@ const equal = document.querySelector("#equals");
 const clearAll = document.querySelector("#ac");
 const percentage = document.querySelector("#percentage");
 const backspace = document.querySelector("#delete");
+const decimal = document.querySelector("#decimal");
 
 // Values
 let numericValue = 0;
@@ -135,15 +136,24 @@ displayNumbers();
 
 // Display a number of max to 9 digits (not including decimal numbers)
 function displayMaxNumberLength() {
-  let numDisplay = result.textContent.replace(/\s+/g, "");
+  let numDisplay = result.textContent.replace(/\s+/g, "");                                    // Remove any unnecessary whitespace
   let numParts = numDisplay.split(".");                                                       // Separate a number into numbers 'before' and 'after' a decimal (if there are any)
  
-  if (numParts[0].length > 9) {                                                               // If integer number is greater than 9, display only 9 digits
-    numParts[0] = numParts[0].substring(0, 9); 
-  };
+  let maxDigits = 9;
 
-  if (numParts.length > 1) {                                                                  // Check if there decimal numbers
-    numDisplay = numParts[0] + "." + numParts[1];                                             // Include any digits before the decimal, and after
+  if (numParts[0].length > maxDigits) {                                                       // If the length of the integer is greater than 9 digits
+    numParts[0] = numParts[0].substring(0, maxDigits);                                        // Truncate the integer length to 9 digits max
+  }
+
+  if (numParts.length > 1) {                                                                  // If the decimal part of the number is present
+    // For example if maxDigits is 9 and integer part has 6 digits...
+    // Max length for decimal digits is 3 (Ex: 234164.535)
+    let maxDecimalDigits = maxDigits - numParts[0].length;                                    // Subtract length of the integer from maximum digits allowed 
+
+    if (numParts[1].length > maxDecimalDigits) {                                              // If length of decimal digits greater than max decimal digits allowed
+      numParts[1] = numParts[1].substring(0, maxDecimalDigits);                               // Truncate the decimal part to max allowed length
+    };
+    numDisplay = numParts[0] + "." + numParts[1];                                             // Concatenate 2 parts together if decimal has been entered
   } else {
     numDisplay = numParts[0];
   };
@@ -154,8 +164,19 @@ function displayMaxNumberLength() {
 // Space out numbers for every 3 digits for better readability
 function formatNumberWithSpaces() {
   let spacedOutput = result.textContent;
-  spacedOutput = spacedOutput.replace(/(\d)(?=(\d{3})+(?!\d|e[\+\-]))/g, "$1 ");              // Separates every 3 digits, excluding scientific notation
 
+  let parts = spacedOutput.split(".");                                                        // Split a value into numbers before and after the decimal
+  let integers = parts[0];
+  let decimals = parts[1];
+
+  if (decimals) {                                                                             // If number after decimal has been entered
+    decimals = decimals.replace(/\s/g, "");                                                   // Remove any whitespace from numbers after the decimal
+    integers = integers.replace(/(\d)(?=(\d{3})+(?!\d|e[\+\-]))/g, "$1 ");                    // ... but keep numbers spaced out 3 digits before the decimal
+    spacedOutput = integers + "." + decimals;
+  } else {
+    spacedOutput = spacedOutput.replace(/(\d)(?=(\d{3})+(?!\d|e[\+\-]))/g, "$1 ");
+  };
+  
   if (spacedOutput.startsWith("0.") || spacedOutput.startsWith("-0.")) {                      // Remove any whitespace from numbers starting with 0. or -0.
     spacedOutput = spacedOutput.replace(/\s/g, "");
   };
@@ -357,7 +378,7 @@ function resetIsClicked() {
   return false;
 };
 
-// Return an object of operators 
+// Store the currently and previously clicked operators 
 const getOperatorFlags = function() {
   return {
     "+": {
@@ -606,7 +627,7 @@ function deleteDigit() {
 
     if (resetIsClicked()) return;
 
-    let digits = numericValue.toString(10).split("");                                         // Turn current value into a string, then array
+    let digits = numericValue.toString().split("");                                           // Turn current value into a string, then array
     digits.pop();                                                                             // Remove the last digit every time backspace button is clicked
 
     if (previousResult !== null && !numberClicked) {                                          // If prevResult is known, but no new number detected before hitting backspace, then keep original value
@@ -675,7 +696,48 @@ function equalsIsClicked() {
   });
 };
 
+// Check if the number has a decimal
+function hasDecimal(num) {
+  return num % 1 !== 0;
+};
 
+// Turn number into a decimal number if the button is clicked
+function decimalIsClicked() {
+  decimal.addEventListener("click", () => {
+    let decimalPoint = "."; 
+
+    if (displayDivisionError()) {
+      return;
+    };
+
+    if (operatorClicked) {
+      if (!numberClicked) {
+        return;
+      };
+    };
+
+    if (percentageClicked) {
+      return;
+    };
+
+    if (equalClicked) {
+      return;
+    };
+  
+    if (hasDecimal(numericValue)) {                                                           // If the number entered has a decimal, then do nothing
+      return;
+    } else {                                                                                  // If the number does not have a decimal, include one, if the button is clicked
+      let decimalValue = numericValue.toString().split("");
+      decimalValue.push(decimalPoint);                      
+      decimalValue = decimalValue.join("");
+      result.textContent = decimalValue;
+      numericValue = parseFloat(decimalValue);
+      formatNumberWithSpaces();
+    };
+  });
+};
+
+decimalIsClicked();
 deleteDigit();
 getPercentageValue();
 addNumbers();
@@ -683,5 +745,3 @@ subtractNumbers();
 multiplyNumbers();
 divideNumbers();
 equalsIsClicked();
-
-// 10.4 / 10 = 1 instead of 1.04 ** NOTE **
