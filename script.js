@@ -1,8 +1,8 @@
 // Calculator by Vlad Hadyak
 
 // Output variables
-const result = document.querySelector(".result");
-const expression = document.querySelector(".expression");
+const result = document.querySelector(".result");                                             // Lower display
+const expression = document.querySelector(".expression");                                     // Upper display
 
 // Operator variables
 const add = document.querySelector("#addition");
@@ -117,7 +117,7 @@ function displayNumbers() {
         expression.textContent = "";
         percentageClicked = false;
         equalClicked = false;
-      } else if (equalClicked) {
+      } else if (equalClicked) {                                                              // Don't allow to enter a new number after '=' has been performed
         return;
       };
 
@@ -128,11 +128,12 @@ function displayNumbers() {
       
       result.textContent = formatNumberWithSpaces();
       numericValue = parseFloat(result.textContent.replace(/\s/g, ""));                       // Remove whitespace before parsing, and retain the whole value
+
+      numericValue = numericValue.toFixed(result.textContent.split(".")[1]?.length || 0);     // Makes sure it doesn't delete more than one non 0 number (or 0 numbers) after a sequence of 0s entered
     });
   });
 };
 displayNumbers();
-
 
 // Display a number of max to 9 digits (not including decimal numbers)
 function displayMaxNumberLength() {
@@ -143,7 +144,7 @@ function displayMaxNumberLength() {
 
   if (numParts[0].length > maxDigits) {                                                       // If the length of the integer is greater than 9 digits
     numParts[0] = numParts[0].substring(0, maxDigits);                                        // Truncate the integer length to 9 digits max
-  }
+  };
 
   if (numParts.length > 1) {                                                                  // If the decimal part of the number is present
     // For example if maxDigits is 9 and integer part has 6 digits...
@@ -216,6 +217,7 @@ function formatScientificNotation(scientificResult) {
     };
   };
   return scientificResult;
+  // Also prevents display overflow if the exponent of scientific notation is greater than 20, and vice versa
 };
 
 // Format decimal numbers, excluding scientific notation
@@ -226,7 +228,7 @@ function formatDecimals(scientificResult) {
 
     if (absoluteNum >= 1e+9) {
       scientificResult = decimalNum.toExponential(5).replace(/(\.?0+)?e/, "e");
-    } else if (absoluteNum >= 1) {                                                                              // If greater or equal to 1, round to 1 decimal
+    } else if (absoluteNum >= 1) {                                                                              // If greater or equal to 1, round to 2 decimals
       scientificResult = decimalNum.toFixed(2).replace(/\.?0+$/, "");
     } else if (absoluteNum >= 0.00001 && absoluteNum < 1) {                                                     // If between 0.00001 and 0.99999 (+/-), round to 5 decimals
       scientificResult = decimalNum.toFixed(5).replace(/\.?0+$/, "");                       
@@ -240,7 +242,7 @@ function formatDecimals(scientificResult) {
 // Format the 'expression' display with spaces
 function formatExpressionWithSpaces(numInput) {
   let spacedOutput = numInput;
-  spacedOutput = spacedOutput.replace(/(\d)(?=(\d{3})+(?!\d|e[\+\-]))/g, "$1 ");              // Separates every 3 digits, excluding scientific notation
+  spacedOutput = spacedOutput.replace(/(\d)(?=(\d{3})+(?!\d|e[\+\-]))/g, "$1 ");              // Separate every 3 digits, excluding scientific notation
 
   if (spacedOutput.startsWith("0.") || spacedOutput.startsWith("-0.")) {                      // Remove any whitespace from numbers starting with 0. or -0.
     spacedOutput = spacedOutput.replace(/\s/g, "");
@@ -421,6 +423,13 @@ function handleOperators(mathOperator) {
   operator = mathOperator;
 
   const operatorFlags = getOperatorFlags();
+
+  // After any operator is clicked, convert a number to a number type to avoid string concatenation after addition or other unexpected behavior
+  if (hasDecimal(numericValue)) {
+    numericValue = parseFloat(numericValue);
+  } else {
+    numericValue = parseFloat(numericValue);
+  };
   
   // Make sure expression display doesn't display anything when no number was entered and operator clicked
   if (!numberClicked && !percentageClicked && !resetClicked && !backspaceClicked && previousOperator === null) {
@@ -546,6 +555,13 @@ function getPercentageValue() {
       return;
     };
 
+    // After '%' convert a number to a number type to avoid string concatenation after addition or "NaN" in display
+    if (hasDecimal(numericValue)) {
+      numericValue = parseFloat(numericValue);
+    } else {
+      numericValue = parseFloat(numericValue);
+    };
+
     if (displayDivisionError()) return;
 
     // If 'reset' was clicked before '%' return nothing
@@ -575,6 +591,7 @@ function getPercentageValue() {
         } else {
           firstNum = firstNum / 100;
           result.textContent = firstNum;
+          percentageClicked = true;
           formatNumbers();
           expression.textContent = `${formatNumberWithSpaces()}`;
           return;
@@ -625,9 +642,7 @@ function deleteDigit() {
 
     if (displayDivisionError()) return;
 
-    if (resetIsClicked()) return;
-
-    let digits = numericValue.toString().split("");                                           // Turn current value into a string, then array
+    let digits = numericValue.toString().split("");                                           // Turn the current value into a string, then array
     digits.pop();                                                                             // Remove the last digit every time backspace button is clicked
 
     if (previousResult !== null && !numberClicked) {                                          // If prevResult is known, but no new number detected before hitting backspace, then keep original value
@@ -638,22 +653,19 @@ function deleteDigit() {
         numericValue = digits.join("");
         numericValue = 0;                                                                     // Set value to 0 if max digits have been deleted
       } else {
-        numericValue = digits.join("");
-        numericValue = parseFloat(numericValue);                                              // Parse it as a number, to prevent string concatenation after addition
+        numericValue = digits.join("");                                                        
       };
     };
 
     if (firstNum !== null && !numberClicked) return;
-
     if (percentageClicked) return;
-
     if (equalClicked) return;
     
     numberClicked = true;
     result.textContent = numericValue;
     backspaceClicked = true;
 
-    formatNumberWithSpaces();
+    if (resetIsClicked()) return;
   });
 };
 
@@ -661,7 +673,14 @@ let initialFirstNum = null;
 
 // Calculate the numbers when '=' is clicked
 function equalsIsClicked() {
-  equal.addEventListener("click", () => {
+  equal.addEventListener("click", () => { 
+
+    // After '=' convert a number to a number type to avoid string concatenation after addition
+    if (hasDecimal(numericValue)) {
+      numericValue = parseFloat(numericValue);
+    } else {
+      numericValue = parseInt(numericValue);
+    };
 
     initialFirstNum = firstNum;                                                               // Set firstNum to a new variable before it was modified by calculation
                                                                                               // (Needed in order to make expression.textContent to work properly)
@@ -704,11 +723,15 @@ function hasDecimal(num) {
 // Turn number into a decimal number if the button is clicked
 function decimalIsClicked() {
   decimal.addEventListener("click", () => {
+
+    // Allow to enter a decimal after reset was performed without clicking 0
+    if (resetIsClicked()) {
+      numericValue = 0;
+    };
+
     let decimalPoint = "."; 
 
-    if (displayDivisionError()) {
-      return;
-    };
+    if (displayDivisionError()) return;
 
     if (operatorClicked) {
       if (!numberClicked) {
@@ -716,14 +739,11 @@ function decimalIsClicked() {
       };
     };
 
-    if (percentageClicked) {
-      return;
-    };
+    if (percentageClicked) return;
 
-    if (equalClicked) {
-      return;
-    };
-  
+    if (equalClicked) return;
+
+    // Perform implementation of decimal '.' while clicked
     if (hasDecimal(numericValue)) {                                                           // If the number entered has a decimal, then do nothing
       return;
     } else {                                                                                  // If the number does not have a decimal, include one, if the button is clicked
