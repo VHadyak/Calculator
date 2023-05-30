@@ -665,6 +665,8 @@ function deleteDigit() {
     result.textContent = numericValue;
     backspaceClicked = true;
 
+    formatNumberWithSpaces();
+
     if (resetIsClicked()) return;
   });
 };
@@ -756,6 +758,10 @@ function decimalIsClicked() {
     };
   });
 };
+
+
+
+
 
 decimalIsClicked();
 deleteDigit();
