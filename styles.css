@@ -16,83 +16,88 @@ body {
   margin: 0;
   padding: 0;
   height: 100vh;
-  background-color: rgb(13, 13, 13);
+  background-image: linear-gradient(to right, #6d26ab, #4a00e0);
 }
 
 .calculator-container {
   display: flex;
   flex-direction: column;
-  justify-content: center;
+  justify-content: space-between;
   align-items: center;
-  border: 1px solid rgb(12, 196, 238);
+  background-color:  rgb(16,12,8);
+  border-radius: 25px;
+  width: 400px;
+  height: 700px;
+  box-shadow: 0 26px 58px 0 rgba(0, 0, 0, .22), 0 5px 14px 0 rgba(0, 0, 0, .18);
 }
 
 .output-container {
   display: flex;
   flex-direction: column;
+  width: 100%;
+  height: 35%;
+  background-color: rgb(22, 21, 19);
+  border-radius: 25px;
 }
 
 .expression {
   display: flex;
   justify-content: flex-end;
-  align-items: center;
-  outline: 1px solid rgb(12, 196, 238);
-  width: 240px;
-  height: 40px;
-  margin-top: 10px;
-  color:rgb(255, 255, 255);
+  align-items: flex-end;
+  padding-bottom: 10px;
+  padding-right: 15px;
+  height: 50%;
+  font-size: 20px;
+  font-family: 'Montserrat', sans-serif;
+  color:rgb(191, 182, 182);
 }
 
 .result {
   display: flex;
   justify-content: flex-end;
-  align-items: center;
-  outline: 1px solid rgb(12, 196, 238);
-  width: 240px;
-  height: 50px;
-  font-size: 25px;
-  padding-right: 2px;
-  color: rgb(255, 255, 255);
-}
-
-.display-result {
-  width: 240px;
-  height: 40px;
-  font-size: 20px;
-  margin: 10px;
-  text-align: right;
+  align-items: flex-start;
+  padding-top: 10px;
+  padding-right: 15px;
+  height: 50%;
+  font-size: 45px;
+  font-family: 'Montserrat', sans-serif;
+  color: rgb(250, 249, 246);
 }
 
 .button-container {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  margin: 10px;
-}
-
-.button-row {
-  display: flex;
-  width: 240px;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  height: 65%;
+  width: 100%;
+  gap: 13px;
+  padding: 15px;
 }
 
 .button {
-  width: 60px;
-  height: 60px;
   text-align: center;
-  font-size: 20px;
+  font-size: 30px;
+  border-radius: 15px;
+  border: none;
+  outline: none;
+  color: rgb(0,255,255);
+  background-color: black;
+  /* Prevent auto text highlighting */
+  user-select: none; 
+  -moz-user-select: none;
+  -webkit-user-select: none;
+  -ms-user-select: none;
 }
 
 svg {
-  width: 30px;
-  height: 30px;
+  transform: scale(1.5);
+  transform-origin: center;
 }
 
 .button:hover {
-  background-color: rgb(126, 246, 246);
+  background-color: rgb(21, 23, 23);
 }
 
 .wide {
-  width: 120px;
+  grid-column: span 2;                                                         /* Takes '=' button the size of 2 */
 }
 
