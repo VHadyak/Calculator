@@ -298,7 +298,7 @@ function operate(operator, firstNum, secondNum) {
       return firstNum - secondNum;
     case "x":
       return firstNum * secondNum;
-    case "/":
+    case "÷":
       if (secondNum === 0) {                                                                  // Division by 0
         return null;
       } else {
@@ -337,7 +337,7 @@ function calculateNumbers() {
   };
 
   // Detect if there was division by 0
-  if ((previousOperator === "/" && operator !== null) && secondNum === 0) {
+  if ((previousOperator === "÷" && operator !== null) && secondNum === 0) {
     displayError = true;
   };
 };
@@ -395,7 +395,7 @@ const getOperatorFlags = function() {
       clicked: multiplyClicked,
       check: addClicked || subtractClicked || divideClicked,
     },
-    "/": {
+    "÷": {
       clicked: divideClicked,
       check: addClicked || subtractClicked || multiplyClicked,
     },
@@ -490,7 +490,7 @@ function handleOperators(mathOperator) {
   addClicked = operator === "+";                                                   
   subtractClicked = operator === "-";
   multiplyClicked = operator === "x";
-  divideClicked = operator === "/";
+  divideClicked = operator === "÷";
 
   // Handle '%' functionality accurately when operator is clicked after '%'
   if (percentageClicked) {
@@ -537,7 +537,7 @@ function multiplyNumbers() {
 // Handle division
 function divideNumbers() {
   divide.addEventListener("click", () => {
-    handleOperators("/");
+    handleOperators("÷");
   });
 };
 
@@ -546,7 +546,7 @@ function getPercentageValue() {
   percentage.addEventListener("click", () => {
 
      // If division by 0 is in progress and '%' clicked, display "ERROR" and reset the calculator
-     if (numberClicked && (operator === "/" && numericValue === 0)) {
+     if (numberClicked && (operator === "÷" && numericValue === 0)) {
       reset();
       resetClicked = false;
       result.textContent = "ERROR";
@@ -742,10 +742,9 @@ function decimalIsClicked() {
     };
 
     if (percentageClicked) return;
-
     if (equalClicked) return;
 
-    // Perform implementation of decimal '.' while clicked
+    // Perform implementation of decimal '.' when clicked
     if (hasDecimal(numericValue)) {                                                           // If the number entered has a decimal, then do nothing
       return;
     } else {                                                                                  // If the number does not have a decimal, include one, if the button is clicked
@@ -759,7 +758,27 @@ function decimalIsClicked() {
   });
 };
 
+// Handle keyboard support for operators 
+function keyPressHandler(e) {
+  // Retrieve the value of the key that is being pressed
+  let keyPress = e.key;                                                                      
 
+  if (keyPress === "+") {
+    handleOperators("+");
+  } else if (keyPress === "-") {
+    handleOperators("-");
+  } else if (keyPress === "*") {
+    handleOperators("x");
+  } else if (keyPress === "/") {
+    handleOperators("÷");
+  };
+
+  // Suppresses any default browser behavior associated with the keys 
+  // ... and only used to trigger handleOperators function
+  e.preventDefault();                                                                         
+};
+
+document.addEventListener("keydown", keyPressHandler);
 
 
 
