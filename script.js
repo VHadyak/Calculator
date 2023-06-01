@@ -118,7 +118,8 @@ function displayNumbers() {
         percentageClicked = false;
         equalClicked = false;
       } else if (equalClicked) {                                                              // Don't allow to enter a new number after '=' has been performed
-        return;
+        reset();
+        resetClicked = false;
       };
 
       result.textContent += number;
