@@ -172,6 +172,16 @@ svg {
   grid-column: span 2;                                                         /* Takes '=' button the size of 2 */
 }
 
+.footer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  color: rgb(176, 175, 174);
+  font-family: 'Roboto', sans-serif;
+  font-size: 16px;
+}
+
 /* If dark mode is enabled */ 
 .calculator-container.dark-mode {
   background-color:  rgb(16,12,8);
@@ -196,4 +206,14 @@ svg {
 
 .dark-mode .button:hover {
   background-color: rgb(21, 23, 23);
+}
+
+.gitSVG {
+  width: 30px;
+  height: 30px;
+  transition: transform 0.3s ease-in-out;
+}
+
+.gitSVG:hover {
+  transform: rotate(360deg);
 }
