@@ -17,7 +17,7 @@ body {
   align-items: center;
   margin: 0;
   padding: 0;
-  height: 100vh;
+  min-height: 100vh;
   background-image: linear-gradient(to right, #6d26ab, #4a00e0);
   gap: 10px;
   overflow: hidden;
@@ -46,7 +46,7 @@ body {
 }
 
 input:checked + .slider {
-  background-color: #26a4f7; 
+  background-color: #287cdc; 
 }
 
 input:checked + .slider:before {
@@ -86,7 +86,7 @@ input:checked + .slider:hover::before {
 }
 
 input:checked + .slider:hover {
-  background-color: #1582cc; 
+  background-color: #3693cd; 
 }
 
 .calculator-container {
@@ -95,10 +95,18 @@ input:checked + .slider:hover {
   justify-content: space-between;
   align-items: center;
   background-color:  rgb(248,248,255);
+  border: 3px outset rgb(21, 21, 21);
   border-radius: 25px;
-  width: 400px;
-  height: 700px;
-  box-shadow: 0 26px 58px 0 rgba(0, 0, 0, .22), 0 5px 14px 0 rgba(0, 0, 0, .18);
+  width: 90%;
+  max-width: 400px;
+  height: 60vh;
+  box-shadow: 0 26px 58px 5px rgba(0, 0, 0, .22), 0 5px 14px 0 rgba(0, 0, 0, .18);
+}
+
+@media (max-width: 480px) {
+  .calculator-container {
+    height: 80vh; 
+  }
 }
 
 .output-container {
@@ -132,6 +140,16 @@ input:checked + .slider:hover {
   font-size: 45px;
   font-family: 'Roboto', sans-serif;
   color: rgb(14, 14, 14);
+}
+
+@media (max-width: 768px) {
+  .expression {
+    font-size: 16px;
+  }
+
+  .result {
+    font-size: 30px;
+  }
 }
 
 .button-container {
@@ -169,7 +187,7 @@ svg {
 }
 
 .wide {
-  grid-column: span 2;                                                         /* Takes '=' button the size of 2 */
+  grid-column: span 2;                                                         /* Takes '=' button the size of 2 regular buttons */
 }
 
 .footer {
@@ -185,6 +203,7 @@ svg {
 /* If dark mode is enabled */ 
 .calculator-container.dark-mode {
   background-color:  rgb(16,12,8);
+  border: 3px inset rgb(50, 189, 213);
 }
 
 .output-container.dark-mode {
@@ -212,8 +231,25 @@ svg {
   width: 30px;
   height: 30px;
   transition: transform 0.3s ease-in-out;
+  
 }
 
 .gitSVG:hover {
-  transform: rotate(360deg);
+  animation: bounce 0.5s;
+  animation-fill-mode: both;
+}
+
+@keyframes bounce {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  25% {
+    transform: translateY(-10px);
+  }
+  50% {
+    transform: translateY(0);
+  }
+  75% {
+    transform: translateY(-5px);
+  }
 }

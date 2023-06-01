@@ -643,6 +643,10 @@ function deleteDigit() {
 
     if (displayDivisionError()) return;
 
+    if (firstNum !== null && !numberClicked) return;
+    if (percentageClicked) return;
+    if (equalClicked) return;
+
     let digits = numericValue.toString().split("");                                           // Turn the current value into a string, then array
     digits.pop();                                                                             // Remove the last digit every time backspace button is clicked
 
@@ -657,10 +661,6 @@ function deleteDigit() {
         numericValue = digits.join("");                                                        
       };
     };
-
-    if (firstNum !== null && !numberClicked) return;
-    if (percentageClicked) return;
-    if (equalClicked) return;
     
     numberClicked = true;
     result.textContent = numericValue;
