@@ -780,6 +780,35 @@ function keyPressHandler(e) {
 
 document.addEventListener("keydown", keyPressHandler);
 
+// Create a mode switch for light and night modes
+function switchMode() {
+  const modeSwitch = document.querySelector("#modeSwitch");
+  const calculatorContainer = document.querySelector(".calculator-container");
+  const outputContainer = document.querySelector(".output-container");
+  const buttonStyle = document.querySelectorAll(".button");
+  const svgButton = document.querySelector("svg");
+  const resultStyle = document.querySelector(".result");
+  const expressionStyle = document.querySelector(".expression");
+
+  modeSwitch.addEventListener("change", () => {
+    if (modeSwitch.checked) {
+      calculatorContainer.classList.add("dark-mode")
+      outputContainer.classList.add("dark-mode");
+      buttonStyle.forEach(button => button.classList.add("dark-mode"));
+      svgButton.classList.add("dark-mode");
+      resultStyle.classList.add("dark-mode");
+      expressionStyle.classList.add("dark-mode");
+    } else {
+      calculatorContainer.classList.remove("dark-mode");
+      outputContainer.classList.remove("dark-mode");
+      buttonStyle.forEach(button => button.classList.remove("dark-mode"));
+      svgButton.classList.remove("dark-mode");
+      resultStyle.classList.remove("dark-mode");
+      expressionStyle.classList.remove("dark-mode");
+    };
+  });
+};
+switchMode();
 
 
 decimalIsClicked();

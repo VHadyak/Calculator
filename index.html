@@ -10,6 +10,10 @@
 </head>
 
 <body>
+  <label class="switch">
+    <input type="checkbox" id="modeSwitch">
+    <span class="slider round"></span>
+  </label>
   <div class="calculator-container">
     <div class="output-container">
       <div class="expression" id="top-exp"></div>
@@ -18,9 +22,10 @@
     <div class="button-container">
       <button class="button" id="ac">AC</button>
       <button class="button" id="delete">
-        <svg viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+        <svg viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg" width="22" height="22">
             <style>
-              .st0{fill:#000000;}
+              .st0{fill:rgb(0, 0, 0);}
+              .dark-mode .st0 { fill: rgb(0, 255, 255); }
             </style>
             <g>
               <polygon class="st0" points="367.375,183.607 312.486,238.495 257.592,183.607 240.087,201.105 294.982,256 240.087,310.894 

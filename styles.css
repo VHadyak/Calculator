@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Roboto&display=swap');
+
 html {
   box-sizing: border-box;
 }
@@ -17,6 +19,74 @@ body {
   padding: 0;
   height: 100vh;
   background-image: linear-gradient(to right, #6d26ab, #4a00e0);
+  gap: 10px;
+  overflow: hidden;
+}
+
+.switch {
+  position: relative;
+  display: flex;
+  width: 70px;
+  height: 25px;
+}
+
+.switch input {
+  display: none;
+}
+
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #a7f6f4;
+  transition: .4s;
+}
+
+input:checked + .slider {
+  background-color: #26a4f7; 
+}
+
+input:checked + .slider:before {
+  background-color: black; 
+  left: 48px;
+}
+
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 18px;
+  width: 18px;
+  left: 4px;
+  top: 3.5px;
+  background-color: rgb(134, 68, 227);
+  transition: .4s;
+}
+
+.slider.round {
+  border-radius: 34px;
+}
+
+.slider.round:before {
+  border-radius: 50%;
+}
+
+.slider:hover {
+  background-color: rgb(117, 205, 221); 
+}
+
+.slider:hover:before {
+  background-color: rgb(69, 43, 153);
+}
+
+input:checked + .slider:hover::before {
+  background-color: #1f053f; 
+}
+
+input:checked + .slider:hover {
+  background-color: #1582cc; 
 }
 
 .calculator-container {
@@ -24,7 +94,7 @@ body {
   flex-direction: column;
   justify-content: space-between;
   align-items: center;
-  background-color:  rgb(16,12,8);
+  background-color:  rgb(248,248,255);
   border-radius: 25px;
   width: 400px;
   height: 700px;
@@ -36,7 +106,7 @@ body {
   flex-direction: column;
   width: 100%;
   height: 35%;
-  background-color: rgb(22, 21, 19);
+  background-color: rgb(239, 236, 236);
   border-radius: 25px;
 }
 
@@ -48,8 +118,8 @@ body {
   padding-right: 15px;
   height: 50%;
   font-size: 20px;
-  font-family: 'Montserrat', sans-serif;
-  color:rgb(191, 182, 182);
+  font-family: 'Roboto', sans-serif;
+  color:rgb(79, 78, 78);
 }
 
 .result {
@@ -60,8 +130,8 @@ body {
   padding-right: 15px;
   height: 50%;
   font-size: 45px;
-  font-family: 'Montserrat', sans-serif;
-  color: rgb(250, 249, 246);
+  font-family: 'Roboto', sans-serif;
+  color: rgb(14, 14, 14);
 }
 
 .button-container {
@@ -76,11 +146,12 @@ body {
 .button {
   text-align: center;
   font-size: 30px;
-  border-radius: 15px;
+  font-family: 'Roboto', sans-serif;
+  border-radius: 25px;
   border: none;
   outline: none;
-  color: rgb(0,255,255);
-  background-color: black;
+  color: rgb(13, 13, 13);
+  background-color: rgb(236, 236, 236);
   /* Prevent auto text highlighting */
   user-select: none; 
   -moz-user-select: none;
@@ -94,10 +165,35 @@ svg {
 }
 
 .button:hover {
-  background-color: rgb(21, 23, 23);
+  background-color: rgb(219, 217, 217);
 }
 
 .wide {
   grid-column: span 2;                                                         /* Takes '=' button the size of 2 */
 }
 
+/* If dark mode is enabled */ 
+.calculator-container.dark-mode {
+  background-color:  rgb(16,12,8);
+}
+
+.output-container.dark-mode {
+  background-color: rgb(22, 21, 19);
+}
+
+.button.dark-mode {
+  color: rgb(0,255,255);
+  background-color: black;
+}
+
+.result.dark-mode {
+  color: rgb(250, 249, 246);
+}
+
+.expression.dark-mode {
+  color:rgb(191, 182, 182);
+}
+
+.dark-mode .button:hover {
+  background-color: rgb(21, 23, 23);
+}
