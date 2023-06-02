@@ -43,10 +43,18 @@ body {
   bottom: 0;
   background-color: #a7f6f4;
   transition: .4s;
+  background-image: url('img/light-mode.svg');
+  background-repeat: no-repeat;
+  background-size: 30% auto;
+  background-position: right 6px center;
 }
 
 input:checked + .slider {
   background-color: #287cdc; 
+  background-image: url('img/dark-mode.svg');
+  background-repeat: no-repeat;
+  background-size: 30% auto;
+  background-position: left 6px center;
 }
 
 input:checked + .slider:before {
@@ -101,6 +109,7 @@ input:checked + .slider:hover {
   max-width: 400px;
   height: 60vh;
   box-shadow: 0 26px 58px 5px rgba(0, 0, 0, .22), 0 5px 14px 0 rgba(0, 0, 0, .18);
+  transition: background 0.2s linear;
 }
 
 @media (max-width: 480px) {
@@ -116,6 +125,7 @@ input:checked + .slider:hover {
   height: 35%;
   background-color: rgb(239, 236, 236);
   border-radius: 25px;
+  transition: background 0.2s linear;
 }
 
 .expression {
@@ -128,6 +138,7 @@ input:checked + .slider:hover {
   font-size: 20px;
   font-family: 'Roboto', sans-serif;
   color:rgb(79, 78, 78);
+  transition: background 0.2s linear;
 }
 
 .result {
@@ -140,15 +151,16 @@ input:checked + .slider:hover {
   font-size: 45px;
   font-family: 'Roboto', sans-serif;
   color: rgb(14, 14, 14);
+  transition: background 0.2s linear;
 }
 
 @media (max-width: 768px) {
   .expression {
-    font-size: 16px;
+    font-size: 17px;
   }
 
   .result {
-    font-size: 30px;
+    font-size: 38px;
   }
 }
 
@@ -175,6 +187,17 @@ input:checked + .slider:hover {
   -moz-user-select: none;
   -webkit-user-select: none;
   -ms-user-select: none;
+  transition: background 0.2s linear;
+}
+
+@media (max-width: 768px) {
+  .button {
+    font-size: 25px;
+  }
+
+  svg {
+    transform: scale(1);
+  }
 }
 
 svg {
@@ -184,6 +207,7 @@ svg {
 
 .button:hover {
   background-color: rgb(219, 217, 217);
+  transition: background 0.2s linear;
 }
 
 .wide {
@@ -195,7 +219,7 @@ svg {
   align-items: center;
   justify-content: center;
   gap: 7px;
-  color: rgb(176, 175, 174);
+  color: rgb(198, 197, 196);
   font-family: 'Roboto', sans-serif;
   font-size: 16px;
 }
@@ -227,11 +251,14 @@ svg {
   background-color: rgb(21, 23, 23);
 }
 
+.dark-mode {
+  transition: background 0.2s linear;
+}
+
 .gitSVG {
   width: 30px;
   height: 30px;
   transition: transform 0.3s ease-in-out;
-  
 }
 
 .gitSVG:hover {

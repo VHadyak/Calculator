@@ -481,10 +481,9 @@ function handleOperators(mathOperator) {
   operatorClicked = true;
   numberClicked = false;
 
-  // If operator clicked right after backspace, and no number was entered before that, return nothing
-  if (backspaceClicked && numericValue === 0) {
-    expression.textContent = "";
-    return;
+  // If operator clicked right after backspace, and no number was entered before that, and (no second operator) display calculation in expression display
+  if (backspaceClicked && numericValue === 0 && !previousOperator) {
+    expression.textContent = `${formatNumberWithSpaces()} ${operator}`;
   };
 
   // Boolean clicked value is based on operator selected, and sets other remaining booleans to false
@@ -662,6 +661,8 @@ function deleteDigit() {
       };
     };
     
+    // 9 + 4 backspace to 0 then + it resets (bug);
+
     numberClicked = true;
     result.textContent = numericValue;
     backspaceClicked = true;
