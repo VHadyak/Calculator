@@ -418,6 +418,9 @@ function updateExpressionFormat(operator) {
   };
 };
 
+
+// BUG: when 0 % x % again wont do x again
+
 // Handler for when operators are clicked in the calculator 
 function handleOperators(mathOperator) {
 
@@ -450,9 +453,12 @@ function handleOperators(mathOperator) {
   // If 'AC' clicked, reset calculator
   if (resetIsClicked()) return;                                                                 
 
-  // Return nothing when operator is clicked right after % without any entered number
-  if (percentageClicked && !numberClicked && previousResult === null) {
+  if (percentageClicked && !numberClicked && previousResult === null && firstNum === 0 && !previousOperator) {
     return;
+  } else if (percentageClicked && !numberClicked && previousResult === null && firstNum !== 0) {
+    percentageClicked = false;
+  } else if (previousOperator && percentageClicked && firstNum === 0) {
+    percentageClicked = false;
   };
 
   updateExpressionFormat(operator);
