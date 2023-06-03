@@ -7,3 +7,4 @@ Includes:
 - Percentage function
 - 3 digit spacing (before the decimal)
 - Mobile responsiveness
+- Keyboard support for: *, /, -, +
