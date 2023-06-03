@@ -114,7 +114,8 @@ input:checked + .slider:hover {
 
 @media (max-width: 480px) {
   .calculator-container {
-    height: 80vh; 
+    height: 67vh; 
+    max-width: 340px;
   }
 }
 
