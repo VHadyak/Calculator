@@ -561,6 +561,10 @@ function getPercentageValue() {
       return;
     };
 
+    if (previousResult === null) {
+      previousOperator = null;
+    };
+
     // After '%' convert a number to a number type to avoid string concatenation after addition or "NaN" in display
     if (hasDecimal(numericValue)) {
       numericValue = parseFloat(numericValue);
@@ -603,7 +607,11 @@ function getPercentageValue() {
           return;
         };     
       } else {
-        previousResult = previousResult / 100;              
+        if (previousOperator === null || (previousOperator !== null && !numberClicked)) {
+          previousResult = previousResult / 100;
+        } else if (previousOperator !== null && numberClicked) {
+          previousResult = operate(operator, previousResult, secondNum) / 100;  
+        };
         firstNum = previousResult;
         result.textContent = previousResult;
         expression.textContent = `${result.textContent}`;
