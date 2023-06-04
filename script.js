@@ -453,11 +453,11 @@ function handleOperators(mathOperator) {
   // If 'AC' clicked, reset calculator
   if (resetIsClicked()) return;                                                                 
 
-  if (percentageClicked && !numberClicked && previousResult === null && firstNum === 0 && !previousOperator) {
+  if (percentageClicked && !numberClicked && previousResult === null && firstNum === 0 && !operatorClicked) {
     return;
   } else if (percentageClicked && !numberClicked && previousResult === null && firstNum !== 0) {
     percentageClicked = false;
-  } else if (previousOperator && percentageClicked && firstNum === 0) {
+  } else if (operatorClicked && percentageClicked && firstNum === 0) {
     percentageClicked = false;
   };
 
@@ -612,6 +612,7 @@ function getPercentageValue() {
         } else if (previousOperator !== null && numberClicked) {
           previousResult = operate(operator, previousResult, secondNum) / 100;  
         };
+           
         firstNum = previousResult;
         result.textContent = previousResult;
         expression.textContent = `${result.textContent}`;
