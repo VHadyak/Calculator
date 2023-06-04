@@ -418,9 +418,6 @@ function updateExpressionFormat(operator) {
   };
 };
 
-
-// BUG: when 0 % x % again wont do x again
-
 // Handler for when operators are clicked in the calculator 
 function handleOperators(mathOperator) {
 
@@ -826,7 +823,6 @@ function switchMode() {
   });
 };
 switchMode();
-
 
 decimalIsClicked();
 deleteDigit();
