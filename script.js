@@ -117,7 +117,7 @@ function displayNumbers() {
         expression.textContent = "";
         percentageClicked = false;
         equalClicked = false;
-      } else if (equalClicked) {                                                              // Don't allow to enter a new number after '=' has been performed
+      } else if (equalClicked) {                                                              // Allow to enter a new number and reset, after '=' has been performed
         reset();
         resetClicked = false;
       };
@@ -429,7 +429,7 @@ function handleOperators(mathOperator) {
   if (hasDecimal(numericValue)) {
     numericValue = parseFloat(numericValue);
   } else {
-    numericValue = parseFloat(numericValue);
+    numericValue = parseInt(numericValue);
   };
   
   // Make sure expression display doesn't display anything when no number was entered and operator clicked
@@ -566,7 +566,7 @@ function getPercentageValue() {
     if (hasDecimal(numericValue)) {
       numericValue = parseFloat(numericValue);
     } else {
-      numericValue = parseFloat(numericValue);
+      numericValue = parseInt(numericValue);
     };
 
     if (displayDivisionError()) return;
